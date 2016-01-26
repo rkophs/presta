@@ -6,43 +6,31 @@ import (
 	"io"
 )
 
-// Scanner represents a lexical scanner.
 type Scanner struct {
 	r *bufio.Reader
 }
 
-// NewScanner returns a new instance of Scanner.
 func NewScanner(r io.Reader) *Scanner {
 	return &Scanner{r: bufio.NewReader(r)}
 }
 
-// Scan returns the next token and literal value.
 func (s *Scanner) Scan() (tok Tok, lit string) {
-	// Read the next rune.
-	ch := s.read()
 
-	//Skip whitespace
-	if isWhitespace(ch) {
+	if ch := s.peek(); isWhitespace(ch) {
 		s.discardWhitespace()
-		ch = s.read()
 	}
 
-	if isLetter(ch) {
-		s.unread()
+	if ch := s.peek(); isLetter(ch) {
 		return s.scanIdent()
 	} else if isQuote(ch) {
-		s.unread()
 		return s.scanStringLiteral()
 	} else if isSymbol(ch) {
-		s.unread()
 		return s.scanOperation()
 	} else if isDigit(ch) {
-		s.unread()
 		return s.scanNumber()
 	}
 
-	// Otherwise read the individual character.
-	switch ch {
+	switch ch := s.read(); ch {
 	case eof:
 		return EOF, ""
 	case '(':
@@ -53,19 +41,15 @@ func (s *Scanner) Scan() (tok Tok, lit string) {
 		return CURLY_OPEN, string(ch)
 	case '}':
 		return CURLY_CLOSE, string(ch)
-		// case ',':
-		// 	return COMMA, string(ch)
+	default:
+		return ILLEGAL, string(ch)
 	}
-
-	return ILLEGAL, string(ch)
 }
 
 func (s *Scanner) scanOperation() (tok Tok, lit string) {
 	var buf bytes.Buffer
 	ch := s.read()
 	buf.WriteRune(ch)
-
-	//{'>', '<', '=', '&', '|', '@', '^', '!', '+', '-', '/', '*', '%', '.'}
 
 	switch ch {
 	case '>':
@@ -106,26 +90,22 @@ func (s *Scanner) scanOperation() (tok Tok, lit string) {
 }
 
 func (s *Scanner) handleTwoOptions(cmp rune, yes Tok, no Tok, buf bytes.Buffer) (tok Tok, lit string) {
-	ch := s.read()
-	if ch == cmp {
-		buf.WriteRune(ch)
+	if ch := s.peek(); ch == cmp {
+		buf.WriteRune(s.read())
 		return yes, buf.String()
 	} else {
-		s.unread()
 		return no, buf.String()
 	}
 }
 
 func (s *Scanner) handleThreeOptions(ifCmp rune, elifCmp rune, a Tok, b Tok, c Tok, buf bytes.Buffer) (tok Tok, lit string) {
-	ch := s.read()
-	if ch == ifCmp {
-		buf.WriteRune(ch)
+	if ch := s.peek(); ch == ifCmp {
+		buf.WriteRune(s.read())
 		return a, buf.String()
 	} else if ch == elifCmp {
-		buf.WriteRune(ch)
+		buf.WriteRune(s.read())
 		return b, buf.String()
 	} else {
-		s.unread()
 		return c, buf.String()
 	}
 }
@@ -137,23 +117,19 @@ func (s *Scanner) scanNumber() (tok Tok, lit string) {
 	dotUsed := false
 
 	for {
-		if ch := s.read(); ch == eof {
-			break
-		} else if ch == '.' {
+		if ch := s.peek(); ch == '.' {
 			if dotUsed {
-				s.unread()
 				break
 			} else {
 				dotUsed = true
-				buf.WriteRune(ch)
+				buf.WriteRune(s.read())
 				if next := s.peek(); !isDigit(next) {
 					return ILLEGAL, buf.String()
 				}
 			}
 		} else if isDigit(ch) {
-			buf.WriteRune(ch)
+			buf.WriteRune(s.read())
 		} else {
-			s.unread()
 			break
 		}
 	}
@@ -162,16 +138,11 @@ func (s *Scanner) scanNumber() (tok Tok, lit string) {
 }
 
 func (s *Scanner) scanStringLiteral() (tok Tok, lit string) {
-	// Create a buffer and throw away current character.
 	var buf bytes.Buffer
-	s.read()
+	s.read() //throw away string opener
 
-	// Read every subsequent whitespace character into the buffer.
-	// Non-whitespace characters and EOF will cause the loop to exit.
 	for {
-		if ch := s.read(); ch == eof {
-			break
-		} else if isQuote(ch) {
+		if ch := s.read(); ch == eof || isQuote(ch) { //throw away string closer
 			break
 		} else {
 			buf.WriteRune(ch)
@@ -181,34 +152,24 @@ func (s *Scanner) scanStringLiteral() (tok Tok, lit string) {
 	return STRING, buf.String()
 }
 
-// scanWhitespace consumes the current rune and all contiguous whitespace.
 func (s *Scanner) discardWhitespace() {
-
-	// Read every subsequent whitespace character into the buffer.
-	// Non-whitespace characters and EOF will cause the loop to exit.
 	for {
-		if ch := s.read(); ch == eof {
-			break
-		} else if !isWhitespace(ch) {
-			s.unread()
+		if ch := s.peek(); ch == eof || !isWhitespace(ch) {
 			break
 		}
+		s.read()
 	}
 }
 
-// scanIdent consumes the current rune and all contiguous ident runes.
 func (s *Scanner) scanIdent() (tok Tok, lit string) {
 	var buf bytes.Buffer
 	buf.WriteRune(s.read())
 
 	for {
-		if ch := s.read(); ch == eof {
-			break
-		} else if !isLetter(ch) && !isDigit(ch) && ch != '_' {
-			s.unread()
+		if ch := s.peek(); ch == eof || (!isLetter(ch) && !isDigit(ch) && ch != '_') {
 			break
 		} else {
-			_, _ = buf.WriteRune(ch)
+			_, _ = buf.WriteRune(s.read())
 		}
 	}
 
@@ -231,8 +192,6 @@ func (s *Scanner) read() rune {
 	}
 	return ch
 }
-
-func (s *Scanner) unread() { _ = s.r.UnreadRune() }
 
 func isSymbol(ch rune) bool {
 	symbols := []rune{'>', '<', '=', '&', '|', '@', '^', '!', '+', '-', '/', '*', '%', '.', ':', '~'}
