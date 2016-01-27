@@ -1,6 +1,14 @@
-package presta
+package lexer
 
 // Token represents a lexical token.
+
+type Token struct {
+	tok  Tok
+	lit  string
+	line int64
+	pos  int64
+}
+
 type Tok int64
 
 const (
@@ -53,3 +61,11 @@ const (
 	NOT
 	CONCAT
 )
+
+func (t *Token) Type() Tok {
+	return t.tok
+}
+
+func (t *Token) Lit() string {
+	return t.lit
+}
