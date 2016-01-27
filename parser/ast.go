@@ -2,7 +2,6 @@ package parser
 
 type AstNode interface {
 	Type() AstNodeType
-	IsExpr() bool
 }
 
 type Function struct {
@@ -124,86 +123,42 @@ func (p *Program) Type() AstNodeType {
 	return PROG
 }
 
-func (p *Program) IsExpr() bool {
-	return true
-}
-
 func (c *Concat) Type() AstNodeType {
 	return CONCAT
-}
-
-func (c *Concat) IsExpr() bool {
-	return true
 }
 
 func (l *Let) Type() AstNodeType {
 	return LET
 }
 
-func (l *Let) IsExpr() bool {
-	return true
-}
-
 func (r *Repeat) Type() AstNodeType {
 	return REPEAT
-}
-
-func (r *Repeat) IsExpr() bool {
-	return true
 }
 
 func (a *Assign) Type() AstNodeType {
 	return ASSIGN
 }
 
-func (a *Assign) IsExpr() bool {
-	return true
-}
-
 func (m *Match) Type() AstNodeType {
 	return MATCH
-}
-
-func (m *Match) IsExpr() bool {
-	return true
 }
 
 func (v *Variable) Type() AstNodeType {
 	return VAR
 }
 
-func (v *Variable) IsExpr() bool {
-	return true
-}
-
 func (c *Call) Type() AstNodeType {
 	return CALL
-}
-
-func (c *Call) IsExpr() bool {
-	return true
 }
 
 func (n *Data) Type() AstNodeType {
 	return DATA
 }
 
-func (d *Data) IsExpr() bool {
-	return true
-}
-
 func (n *Not) Type() AstNodeType {
 	return NOT
 }
 
-func (n *Not) IsExpr() bool {
-	return true
-}
-
 func (b *BinOp) Type() AstNodeType {
 	return BIN_OP
-}
-
-func (b *BinOp) IsExpr() bool {
-	return true
 }
