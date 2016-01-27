@@ -5,6 +5,12 @@ type AstNode interface {
 	IsExpr() bool
 }
 
+type Function struct {
+	name   string
+	params []string
+	exec   AstNode
+}
+
 type AstNodeType int64
 type MatchType int64
 type BinOpType int64
@@ -59,14 +65,8 @@ const (
 )
 
 type Program struct {
-	funcs []AstNode
+	funcs []*Function
 	exec  AstNode
-}
-
-type Function struct {
-	name   string
-	params []string
-	exec   AstNode
 }
 
 type Concat struct {
@@ -128,14 +128,6 @@ func (p *Program) IsExpr() bool {
 	return true
 }
 
-func (f *Function) Type() AstNodeType {
-	return FUNC
-}
-
-func (f *Function) IsExpr() bool {
-	return false
-}
-
 func (c *Concat) Type() AstNodeType {
 	return CONCAT
 }
@@ -173,7 +165,7 @@ func (m *Match) Type() AstNodeType {
 }
 
 func (m *Match) IsExpr() bool {
-	return false
+	return true
 }
 
 func (v *Variable) Type() AstNodeType {

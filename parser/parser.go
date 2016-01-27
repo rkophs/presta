@@ -35,7 +35,7 @@ func (p *Parser) program() (tree AstNode, yes bool, err *Error) {
 	readCount := 0
 
 	/*Check for function declarations*/
-	functions := []AstNode{}
+	functions := []*Function{}
 	for {
 		if function, yes, err := p.function(); err.err {
 			return p.parseError(err.msg, readCount)
@@ -58,33 +58,41 @@ func (p *Parser) program() (tree AstNode, yes bool, err *Error) {
 	return p.parseValid(program)
 }
 
-func (p *Parser) function() (tree AstNode, yes bool, err *Error) {
+func (p *Parser) function() (tree *Function, yes bool, err *Error) {
 	readCount := 0
+
+	var badFunc *Function
 
 	/*Check if it starts with '~' */
 	readCount++
 	if tok, eof := p.read(); eof {
-		return p.parseError("Premature end.", readCount)
+		_, yes, err := p.parseError("Premature end.", readCount)
+		return badFunc, yes, err
 	} else if tok.Type() != lexer.FUNC {
-		return p.parseExit(readCount)
+		_, yes, err := p.parseExit(readCount)
+		return badFunc, yes, err
 	}
 
 	/*Check for identifier*/
 	readCount++
 	tok, eof := p.read()
 	if eof {
-		return p.parseError("Premature end.", readCount)
+		_, yes, err := p.parseError("Premature end.", readCount)
+		return badFunc, yes, err
 	} else if tok.Type() != lexer.IDENTIFIER {
-		return p.parseError("Function name must follow ~", readCount)
+		_, yes, err := p.parseError("Function name must follow ~", readCount)
+		return badFunc, yes, err
 	}
 	funcName := tok.Lit()
 
 	/* Check for parenthesis */
 	readCount++
 	if tok, eof := p.read(); eof {
-		return p.parseError("Premature end.", readCount)
+		_, yes, err := p.parseError("Premature end.", readCount)
+		return badFunc, yes, err
 	} else if tok.Type() != lexer.PAREN_OPEN {
-		return p.parseError("'(' must follow function name", readCount)
+		_, yes, err := p.parseError("Parenthesis must follow function name", readCount)
+		return badFunc, yes, err
 	}
 
 	/* Check for param names */
@@ -92,42 +100,50 @@ func (p *Parser) function() (tree AstNode, yes bool, err *Error) {
 	for {
 		readCount++
 		if tok, eof := p.read(); eof {
-			return p.parseError("Premature end.", readCount)
+			_, yes, err := p.parseError("Premature end.", readCount)
+			return badFunc, yes, err
 		} else if tok.Type() == lexer.IDENTIFIER {
 			params = append(params, tok.Lit())
 		} else if tok.Type() == lexer.PAREN_CLOSE {
 			break
 		} else {
-			return p.parseError("Looking for parameter identifiers for function", readCount)
+			_, yes, err := p.parseError("Looking for parameter identifiers for function", readCount)
+			return badFunc, yes, err
 		}
 	}
 
 	/*Check for parenthesis*/
 	readCount++
 	if tok, eof := p.read(); eof {
-		return p.parseError("Premature end.", readCount)
+		_, yes, err := p.parseError("Premature end.", readCount)
+		return badFunc, yes, err
 	} else if tok.Type() != lexer.PAREN_OPEN {
-		return p.parseError("'(' must prefix function body", readCount)
+		_, yes, err := p.parseError("'(' must prefix function body", readCount)
+		return badFunc, yes, err
 	}
 
 	/* Check for expression */
 	expr, yes, err := p.expression()
 	if err.err {
-		return p.parseError(err.msg, readCount)
+		_, yes, err := p.parseError(err.msg, readCount)
+		return badFunc, yes, err
 	} else if !yes {
-		return p.parseError("Function body must be an executable expression", readCount)
+		_, yes, err := p.parseError("Function body must be an executable expression", readCount)
+		return badFunc, yes, err
 	}
 
 	/*Check for parenthesis*/
 	readCount++
 	if tok, eof := p.read(); eof {
-		return p.parseError("Premature end.", readCount)
+		_, yes, err := p.parseError("Premature end.", readCount)
+		return badFunc, yes, err
 	} else if tok.Type() != lexer.PAREN_CLOSE {
-		return p.parseError("')' must postfix function body", readCount)
+		_, yes, err := p.parseError("Parenthesis must postfix function body", readCount)
+		return badFunc, yes, err
 	}
 
 	node := &Function{name: funcName, params: params, exec: expr}
-	return p.parseValid(node)
+	return node, yes, &Error{err: false}
 }
 
 func (p *Parser) expression() (tree AstNode, yes bool, err *Error) {
