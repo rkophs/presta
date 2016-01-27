@@ -17,7 +17,6 @@ type DataType int64
 
 const (
 	PROG AstNodeType = iota
-	FUNC
 	CONCAT
 	LET
 	REPEAT
