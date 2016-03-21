@@ -15,6 +15,23 @@ type BinOp struct {
 	op BinOpType
 }
 
+func NewBinOp(p *Parser, op BinOpType, readCount int) (tree AstNode, err Error) {
+	if l, err := p.expression(); err != nil {
+		return p.parseError(err.Message(), readCount)
+	} else if l != nil {
+		if r, err := p.expression(); err != nil {
+			return p.parseError(err.Message(), readCount)
+		} else if r != nil {
+			node := &BinOp{l: l, r: r, op: op}
+			return p.parseValid(node)
+		} else {
+			return p.parseError("Binary op needs another expression.", readCount)
+		}
+	} else {
+		return p.parseError("Binary operation needs 2 expressions.", readCount)
+	}
+}
+
 func (b *BinOp) Type() AstNodeType {
 	return BIN_OP
 }

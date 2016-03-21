@@ -12,7 +12,7 @@ type Not struct {
 	exec AstNode
 }
 
-func (p *Parser) notExpr() (tree AstNode, yes bool, err Error) {
+func NewNotExpr(p *Parser) (tree AstNode, err Error) {
 	readCount := 0
 	/*Check for ! */
 	readCount++
@@ -22,9 +22,9 @@ func (p *Parser) notExpr() (tree AstNode, yes bool, err Error) {
 		return p.parseExit(readCount) //Not caller, but data identifier
 	}
 
-	if expr, yes, err := p.expression(); err != nil {
+	if expr, err := p.expression(); err != nil {
 		return p.parseError(err.Message(), readCount)
-	} else if yes {
+	} else if expr != nil {
 		node := &Not{exec: expr}
 		return p.parseValid(node)
 	} else {

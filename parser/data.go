@@ -18,7 +18,7 @@ type Data struct {
 	dataType DataType
 }
 
-func (p *Parser) data() (tree AstNode, yes bool, err Error) {
+func NewData(p *Parser) (tree AstNode, err Error) {
 	readCount := 1
 	if tok, err := p.read(); err {
 		return p.parseError("Premature end.", readCount)

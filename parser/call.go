@@ -31,7 +31,7 @@ func (c *Call) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("CALL")})
 }
 
-func (p *Parser) callExpr() (tree AstNode, yes bool, err Error) {
+func NewCallExpr(p *Parser) (tree AstNode, err Error) {
 
 	readCount := 0
 
@@ -57,9 +57,9 @@ func (p *Parser) callExpr() (tree AstNode, yes bool, err Error) {
 	/* Check for arguments */
 	args := []AstNode{}
 	for {
-		if expr, yes, err := p.expression(); err != nil {
+		if expr, err := p.expression(); err != nil {
 			return p.parseError(err.Message(), readCount)
-		} else if yes {
+		} else if expr != nil {
 			args = append(args, expr)
 		} else {
 			break

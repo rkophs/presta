@@ -18,36 +18,32 @@ func (p *Program) Type() AstNodeType {
 	return PROG
 }
 
-func (p *Parser) program() (tree *Program, yes bool, err Error) {
+func (p *Parser) program() (tree AstNode, err Error) {
 	readCount := 0
-	var invalid Program
 
 	/*Check for function declarations*/
 	functions := []*Function{}
 	for {
-		if function, yes, err := p.function(); err != nil {
-			_, yes, err := p.parseError(err.Message(), readCount)
-			return &invalid, yes, err
-		} else if yes {
-			functions = append(functions, function)
+		if function, err := p.function(); err != nil {
+			_, err := p.parseError(err.Message(), readCount)
+			return nil, err
+		} else if function != nil {
+			functions = append(functions, function.(*Function))
 		} else {
 			break
 		}
 	}
 
 	/*Check for exec*/
-	expr, yes, err := p.expression()
+	expr, err := p.expression()
 	if err != nil {
-		_, yes, err := p.parseError(err.Message(), readCount)
-		return &invalid, yes, err
-	} else if !yes {
-		_, yes, err := p.parseError("Program must contain an executable expression", readCount)
-		return &invalid, yes, err
+		return p.parseError(err.Message(), readCount)
+	} else if expr == nil {
+		return p.parseError("Program must contain an executable expression", readCount)
 	}
 
 	program := &Program{funcs: functions, exec: expr}
-	_, yes, err = p.parseValid(program)
-	return program, yes, err
+	return program, nil
 }
 
 func (p *Program) Serialize(buffer *bytes.Buffer) {

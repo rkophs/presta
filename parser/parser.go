@@ -15,18 +15,16 @@ func NewParser(tokens []lexer.Token) *Parser {
 }
 
 func (p *Parser) Scan() (tree AstNode, err Error) {
-	if tree, yes, err := p.program(); !yes {
-		if err != nil {
-			return tree, err
-		} else {
-			return tree, NewSyntaxError("No program available.")
-		}
+	if tree, err := p.program(); err != nil {
+		return nil, err
+	} else if tree == nil {
+		return p.parseError("No program available.", 0)
 	} else {
-		return tree, nil
+		return p.parseValid(tree)
 	}
 }
 
-func (p *Parser) expression() (tree AstNode, yes bool, err Error) {
+func (p *Parser) expression() (tree AstNode, err Error) {
 
 	readCount := 0
 	parens := false
@@ -40,34 +38,34 @@ func (p *Parser) expression() (tree AstNode, yes bool, err Error) {
 		parens = true
 	}
 
-	if node, yes, err := p.letExpr(); err != nil {
+	if node, err := NewLetExpr(p); err != nil {
 		return p.parseError(err.Message(), readCount)
-	} else if yes {
+	} else if node != nil {
 		return p.validExprEnding(node, parens, readCount)
 	}
 
-	if node, yes, err := p.unExpr(); err != nil {
+	if node, err := p.parseUnaryExpression(); err != nil {
 		return p.parseError(err.Message(), readCount)
-	} else if yes {
+	} else if node != nil {
 		return p.validExprEnding(node, parens, readCount)
 	}
 
-	if node, yes, err := p.binExpr(); err != nil {
+	if node, err := p.parseBinaryExpression(); err != nil {
 		return p.parseError(err.Message(), readCount)
-	} else if yes {
+	} else if node != nil {
 		return p.validExprEnding(node, parens, readCount)
 	}
 
-	if node, yes, err := p.data(); err != nil {
+	if node, err := NewData(p); err != nil {
 		return p.parseError(err.Message(), readCount)
-	} else if yes {
+	} else if node != nil {
 		return p.validExprEnding(node, parens, readCount)
 	}
 
 	return p.parseExit(readCount)
 }
 
-func (p *Parser) validExprEnding(node AstNode, hasOpening bool, readCount int) (tree AstNode, yes bool, err Error) {
+func (p *Parser) validExprEnding(node AstNode, hasOpening bool, readCount int) (tree AstNode, err Error) {
 	if !hasOpening {
 		return p.parseValid(node)
 	}
@@ -77,7 +75,7 @@ func (p *Parser) validExprEnding(node AstNode, hasOpening bool, readCount int) (
 	} else if !yes {
 		return p.parseError("Missing closing parenthesis for expression", readCount)
 	} else {
-		return node, true, err
+		return node, err
 	}
 }
 
@@ -92,68 +90,44 @@ func (p *Parser) closeParen() (yes bool, err Error) {
 	}
 }
 
-func (p *Parser) unExpr() (tree AstNode, yes bool, err Error) {
+func (p *Parser) parseUnaryExpression() (tree AstNode, err Error) {
 
 	readCount := 0
 
-	if node, yes, err := p.matchExpr(); err != nil {
+	if node, err := NewMatchExpr(p); err != nil {
 		return p.parseError(err.Message(), readCount)
-	} else if yes {
+	} else if node != nil {
 		return p.parseValid(node)
 	}
 
-	if node, yes, err := p.concatExpr(); err != nil {
+	if node, err := NewConcatExpr(p); err != nil {
 		return p.parseError(err.Message(), readCount)
-	} else if yes {
+	} else if node != nil {
 		return p.parseValid(node)
 	}
 
-	if node, yes, err := p.callExpr(); err != nil {
+	if node, err := NewCallExpr(p); err != nil {
 		return p.parseError(err.Message(), readCount)
-	} else if yes {
+	} else if node != nil {
 		return p.parseValid(node)
 	}
 
-	if node, yes, err := p.notExpr(); err != nil {
+	if node, err := NewNotExpr(p); err != nil {
 		return p.parseError(err.Message(), readCount)
-	} else if yes {
+	} else if node != nil {
 		return p.parseValid(node)
 	}
 
-	if node, yes, err := p.incExpr(); err != nil {
+	if node, err := p.parseIncrExpression(); err != nil {
 		return p.parseError(err.Message(), readCount)
-	} else if yes {
+	} else if node != nil {
 		return p.parseValid(node)
 	}
 
 	return p.parseExit(readCount)
 }
 
-func (p *Parser) branches() (c []AstNode, b []AstNode, err Error) {
-	conds := []AstNode{}
-	branches := []AstNode{}
-	for {
-		if cond, yes, err := p.expression(); err != nil {
-			return conds, branches, err
-		} else if yes {
-			conds = append(conds, cond)
-		} else {
-			break
-		}
-
-		if branch, yes, err := p.expression(); err != nil {
-			return conds, branches, err
-		} else if !yes {
-			return conds, branches, NewSyntaxError("Match expression missing branch")
-		} else {
-			branches = append(branches, branch)
-		}
-	}
-
-	return conds, branches, nil
-}
-
-func (p *Parser) incExpr() (tree AstNode, yes bool, err Error) {
+func (p *Parser) parseIncrExpression() (tree AstNode, err Error) {
 	readCount := 0
 
 	/* Get op type */
@@ -182,23 +156,23 @@ func (p *Parser) incExpr() (tree AstNode, yes bool, err Error) {
 		variable = &Variable{name: name}
 	}
 
-	one := &Data{dataType: NUMBER, num: 0}
+	one := &Data{dataType: NUMBER, num: 1}
 	node := &BinOp{l: variable, r: one, op: opType}
 	return p.parseValid(node)
 }
 
-func (p *Parser) binExpr() (tree AstNode, yes bool, err Error) {
+func (p *Parser) parseBinaryExpression() (tree AstNode, err Error) {
 	readCount := 0
 
-	if node, yes, err := p.assignExpr(); err != nil {
+	if node, err := NewAssignExpr(p); err != nil {
 		return p.parseError(err.Message(), readCount)
-	} else if yes {
+	} else if node != nil {
 		return p.parseValid(node)
 	}
 
-	if node, yes, err := p.repeatExpr(); err != nil {
+	if node, err := NewRepeatExpr(p); err != nil {
 		return p.parseError(err.Message(), readCount)
-	} else if yes {
+	} else if node != nil {
 		return p.parseValid(node)
 	}
 
@@ -209,77 +183,58 @@ func (p *Parser) binExpr() (tree AstNode, yes bool, err Error) {
 	}
 	switch tok.Type() {
 	case lexer.GT:
-		return p.parseBinaryOp(GT, readCount)
+		return NewBinOp(p, GT, readCount)
 	case lexer.LT:
-		return p.parseBinaryOp(LT, readCount)
+		return NewBinOp(p, LT, readCount)
 	case lexer.GTE:
-		return p.parseBinaryOp(GTE, readCount)
+		return NewBinOp(p, GTE, readCount)
 	case lexer.LTE:
-		return p.parseBinaryOp(LTE, readCount)
+		return NewBinOp(p, LTE, readCount)
 	case lexer.EQ:
-		return p.parseBinaryOp(EQ, readCount)
+		return NewBinOp(p, EQ, readCount)
 	case lexer.NEQ:
-		return p.parseBinaryOp(NEQ, readCount)
+		return NewBinOp(p, NEQ, readCount)
 	case lexer.OR:
-		return p.parseBinaryOp(OR, readCount)
+		return NewBinOp(p, OR, readCount)
 	case lexer.AND:
-		return p.parseBinaryOp(AND, readCount)
+		return NewBinOp(p, AND, readCount)
 	case lexer.ADD:
-		return p.parseBinaryOp(ADD, readCount)
+		return NewBinOp(p, ADD, readCount)
 	case lexer.SUB:
-		return p.parseBinaryOp(SUB, readCount)
+		return NewBinOp(p, SUB, readCount)
 	case lexer.MULT:
-		return p.parseBinaryOp(MULT, readCount)
+		return NewBinOp(p, MULT, readCount)
 	case lexer.DIV:
-		return p.parseBinaryOp(DIV, readCount)
+		return NewBinOp(p, DIV, readCount)
 	case lexer.MOD:
-		return p.parseBinaryOp(MOD, readCount)
+		return NewBinOp(p, MOD, readCount)
 	case lexer.ADD_I:
-		return p.parseBinaryOp(ADD_I, readCount)
+		return NewBinOp(p, ADD_I, readCount)
 	case lexer.SUB_I:
-		return p.parseBinaryOp(SUB_I, readCount)
+		return NewBinOp(p, SUB_I, readCount)
 	case lexer.MULT_I:
-		return p.parseBinaryOp(MULT_I, readCount)
+		return NewBinOp(p, MULT_I, readCount)
 	case lexer.DIV_I:
-		return p.parseBinaryOp(DIV_I, readCount)
+		return NewBinOp(p, DIV_I, readCount)
 	case lexer.MOD_I:
-		return p.parseBinaryOp(MOD_I, readCount)
+		return NewBinOp(p, MOD_I, readCount)
 	default:
 		return p.parseExit(readCount)
 	}
 }
 
-func (p *Parser) parseBinaryOp(op BinOpType, readCount int) (tree AstNode, yes bool, err Error) {
-	if l, yes, err := p.expression(); err != nil {
-		return p.parseError(err.Message(), readCount)
-	} else if yes {
-		if r, yes, err := p.expression(); err != nil {
-			return p.parseError(err.Message(), readCount)
-		} else if yes {
-			node := &BinOp{l: l, r: r, op: op}
-			return p.parseValid(node)
-		} else {
-			return p.parseError("Binary op needs another expression.", readCount)
-		}
-	} else {
-		return p.parseError("Binary operation needs 2 expressions.", readCount)
-	}
-}
-
-func (p *Parser) parseExit(readCount int) (tree AstNode, yes bool, err Error) {
-	var node AstNode
+func (p *Parser) parseExit(readCount int) (tree AstNode, err Error) {
 	p.rollBack(readCount)
-	return node, false, nil
+	return nil, nil
 }
 
-func (p *Parser) parseValid(node AstNode) (tree AstNode, yes bool, err Error) {
-	return node, true, nil
+func (p *Parser) parseValid(node AstNode) (tree AstNode, err Error) {
+	return node, nil
 }
 
-func (p *Parser) parseError(msg string, readCount int) (tree AstNode, yes bool, err Error) {
-	var node AstNode
+func (p *Parser) parseError(msg string, readCount int) (tree AstNode, err Error) {
 	p.rollBack(readCount)
-	return node, false, NewSyntaxError(msg)
+	return nil, NewSyntaxError(msg)
 }
 
 func (p *Parser) rollBack(amount int) {

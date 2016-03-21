@@ -14,7 +14,7 @@ type Match struct {
 	matchType  MatchType
 }
 
-func (p *Parser) matchExpr() (tree AstNode, yes bool, err Error) {
+func NewMatchExpr(p *Parser) (tree AstNode, err Error) {
 	readCount := 0
 
 	/*Get '@' or '|' */
@@ -39,7 +39,7 @@ func (p *Parser) matchExpr() (tree AstNode, yes bool, err Error) {
 	}
 
 	/*Get branches*/
-	conditions, branches, err := p.branches()
+	conditions, branches, err := branches(p)
 	if err != nil {
 		return p.parseError(err.Message(), readCount)
 	}
@@ -58,6 +58,30 @@ func (p *Parser) matchExpr() (tree AstNode, yes bool, err Error) {
 
 	node := &Match{conditions: conditions, branches: branches, matchType: matchType}
 	return p.parseValid(node)
+}
+
+func branches(p *Parser) (c []AstNode, b []AstNode, err Error) {
+	conds := []AstNode{}
+	branches := []AstNode{}
+	for {
+		if cond, err := p.expression(); err != nil {
+			return conds, branches, err
+		} else if cond != nil {
+			conds = append(conds, cond)
+		} else {
+			break
+		}
+
+		if branch, err := p.expression(); err != nil {
+			return conds, branches, err
+		} else if branch == nil {
+			return conds, branches, NewSyntaxError("Match expression missing branch")
+		} else {
+			branches = append(branches, branch)
+		}
+	}
+
+	return conds, branches, nil
 }
 
 func (m *Match) Type() AstNodeType {

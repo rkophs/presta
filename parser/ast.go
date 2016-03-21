@@ -31,6 +31,7 @@ const (
 	DATA
 	NOT
 	BIN_OP
+	FUNC
 )
 
 const (

@@ -13,7 +13,7 @@ type Assign struct {
 	value AstNode
 }
 
-func (p *Parser) assignExpr() (tree AstNode, yes bool, err Error) {
+func NewAssignExpr(p *Parser) (tree AstNode, err Error) {
 	readCount := 0
 
 	/*Check for : */
@@ -36,9 +36,9 @@ func (p *Parser) assignExpr() (tree AstNode, yes bool, err Error) {
 	}
 
 	/*Get expression*/
-	if expr, yes, err := p.expression(); err != nil {
+	if expr, err := p.expression(); err != nil {
 		return p.parseError(err.Message(), readCount)
-	} else if yes {
+	} else if expr != nil {
 		node := &Assign{name: name, value: expr}
 		return p.parseValid(node)
 	} else {

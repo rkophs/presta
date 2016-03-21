@@ -14,7 +14,7 @@ type Let struct {
 	exec   AstNode
 }
 
-func (p *Parser) letExpr() (tree AstNode, yes bool, err Error) {
+func NewLetExpr(p *Parser) (tree AstNode, err Error) {
 	readCount := 0
 
 	/*Check if it starts with ':' */
@@ -60,9 +60,9 @@ func (p *Parser) letExpr() (tree AstNode, yes bool, err Error) {
 	/* Check for assignments */
 	values := []AstNode{}
 	for {
-		if node, yes, err := p.expression(); err != nil {
+		if node, err := p.expression(); err != nil {
 			return p.parseError(err.Message(), readCount)
-		} else if yes {
+		} else if node != nil {
 			values = append(values, node)
 		} else {
 			break
@@ -81,10 +81,10 @@ func (p *Parser) letExpr() (tree AstNode, yes bool, err Error) {
 		return p.parseError("Missing closing parenthesis for let assignments", readCount)
 	}
 
-	body, yes, err := p.expression()
+	body, err := p.expression()
 	if err != nil {
 		return p.parseError(err.Message(), readCount)
-	} else if !yes {
+	} else if body == nil {
 		return p.parseError("Missing let statement body", readCount)
 	}
 

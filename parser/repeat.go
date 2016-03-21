@@ -13,7 +13,7 @@ type Repeat struct {
 	exec      AstNode
 }
 
-func (p *Parser) repeatExpr() (tree AstNode, yes bool, err Error) {
+func NewRepeatExpr(p *Parser) (tree AstNode, err Error) {
 	readCount := 0
 
 	/*Check for ^ */
@@ -26,18 +26,18 @@ func (p *Parser) repeatExpr() (tree AstNode, yes bool, err Error) {
 
 	/*Get expression*/
 	var condition AstNode
-	if expr, yes, err := p.expression(); err != nil {
+	if expr, err := p.expression(); err != nil {
 		return p.parseError(err.Message(), readCount)
-	} else if yes {
+	} else if expr != nil {
 		condition = expr
 	} else {
 		return p.parseError("Repeat op must have condition", readCount)
 	}
 
 	/*Get expression*/
-	if expr, yes, err := p.expression(); err != nil {
+	if expr, err := p.expression(); err != nil {
 		return p.parseError(err.Message(), readCount)
-	} else if yes {
+	} else if expr != nil {
 		node := &Repeat{condition: condition, exec: expr}
 		return p.parseValid(node)
 	} else {

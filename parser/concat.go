@@ -12,7 +12,7 @@ type Concat struct {
 	components []AstNode
 }
 
-func (p *Parser) concatExpr() (tree AstNode, yes bool, err Error) {
+func NewConcatExpr(p *Parser) (tree AstNode, err Error) {
 	readCount := 0
 
 	/* Get '.' */
@@ -34,9 +34,9 @@ func (p *Parser) concatExpr() (tree AstNode, yes bool, err Error) {
 	/*Get List*/
 	exprs := []AstNode{}
 	for {
-		if expr, yes, err := p.expression(); err != nil {
+		if expr, err := p.expression(); err != nil {
 			return p.parseError(err.Message(), readCount)
-		} else if yes {
+		} else if expr != nil {
 			exprs = append(exprs, expr)
 		} else {
 			break
