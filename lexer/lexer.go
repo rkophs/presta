@@ -15,7 +15,7 @@ type Scanner struct {
 
 func Tokenize(reader io.Reader) (tokens []Token, err bool, msg string) {
 	s := NewScanner(reader)
-	a := make([]Token, 1)
+	a := []Token{}
 	for {
 		tok := s.Scan()
 		if tok.tok == EOF {

@@ -1,13 +1,17 @@
 package parser
 
-type AstNode interface {
-	Type() AstNodeType
-}
+import (
+	"bytes"
+	"github.com/rkophs/presta/icg"
+	"github.com/rkophs/presta/json"
+	"github.com/rkophs/presta/semantic"
+)
 
-type Function struct {
-	name   string
-	params []string
-	exec   AstNode
+type AstNode interface {
+	json.Serializable
+	Type() AstNodeType
+	GenerateICG(offset int64, code *icg.Code, s *semantic.Semantic) (int64, Error)
+	//Generate(*Semantic)
 }
 
 type AstNodeType int64
@@ -62,102 +66,112 @@ const (
 	NUMBER
 )
 
-type Program struct {
-	funcs []*Function
-	exec  AstNode
+func (a *AstNodeType) String() string {
+	switch *a {
+	case PROG:
+		return "PROG"
+	case CONCAT:
+		return "CONCAT"
+	case LET:
+		return "LET"
+	case REPEAT:
+		return "REPEAT"
+	case ASSIGN:
+		return "ASSIGN"
+	case MATCH:
+		return "MATCH"
+	case VAR:
+		return "VAR"
+	case CALL:
+		return "CALL"
+	case DATA:
+		return "DATA"
+	case NOT:
+		return "NOT"
+	case BIN_OP:
+		return "BIN_OP"
+	default:
+		return ""
+	}
 }
 
-type Concat struct {
-	components []AstNode
+func (a *AstNodeType) Serialize(buffer *bytes.Buffer) {
+	json.NewString(a.String()).Serialize(buffer)
 }
 
-type Let struct {
-	params []string
-	values []AstNode
-	exec   AstNode
+func (m *MatchType) String() string {
+	switch *m {
+	case ALL:
+		return "MATCH_ALL"
+	case FIRST:
+		return "MATCH_FIRST"
+	default:
+		return ""
+	}
 }
 
-type Repeat struct {
-	condition AstNode
-	exec      AstNode
+func (m *MatchType) Serialize(buffer *bytes.Buffer) {
+	json.NewString(m.String()).Serialize(buffer)
 }
 
-type Assign struct {
-	name  string
-	value AstNode
+func (b *BinOpType) String() string {
+	switch *b {
+	case ADD:
+		return "+"
+	case SUB:
+		return "-"
+	case MULT:
+		return "*"
+	case DIV:
+		return "/"
+	case MOD:
+		return "%"
+	case ADD_I:
+		return "+="
+	case SUB_I:
+		return "-="
+	case MULT_I:
+		return "*="
+	case DIV_I:
+		return "/="
+	case MOD_I:
+		return "%="
+	case LT:
+		return "<"
+	case LTE:
+		return "<="
+	case GT:
+		return ">"
+	case GTE:
+		return ">="
+	case EQ:
+		return "=="
+	case NEQ:
+		return "!"
+	case AND:
+		return "&&"
+	case OR:
+		return "||"
+	default:
+		return ""
+	}
 }
 
-type Match struct {
-	conditions []AstNode
-	branches   []AstNode
-	matchType  MatchType
+func (b *BinOpType) Serialize(buffer *bytes.Buffer) {
+	json.NewString(b.String()).Serialize(buffer)
 }
 
-type Variable struct {
-	name string
+func (d *DataType) String() string {
+	switch *d {
+	case STRING:
+		return "STRING"
+	case NUMBER:
+		return "NUMBER"
+	default:
+		return ""
+	}
 }
 
-type Call struct {
-	name   string
-	params []AstNode
-}
-
-type Data struct {
-	str      string
-	num      float64
-	dataType DataType
-}
-
-type Not struct {
-	exec AstNode
-}
-
-type BinOp struct {
-	a  AstNode
-	b  AstNode
-	op BinOpType
-}
-
-func (p *Program) Type() AstNodeType {
-	return PROG
-}
-
-func (c *Concat) Type() AstNodeType {
-	return CONCAT
-}
-
-func (l *Let) Type() AstNodeType {
-	return LET
-}
-
-func (r *Repeat) Type() AstNodeType {
-	return REPEAT
-}
-
-func (a *Assign) Type() AstNodeType {
-	return ASSIGN
-}
-
-func (m *Match) Type() AstNodeType {
-	return MATCH
-}
-
-func (v *Variable) Type() AstNodeType {
-	return VAR
-}
-
-func (c *Call) Type() AstNodeType {
-	return CALL
-}
-
-func (n *Data) Type() AstNodeType {
-	return DATA
-}
-
-func (n *Not) Type() AstNodeType {
-	return NOT
-}
-
-func (b *BinOp) Type() AstNodeType {
-	return BIN_OP
+func (d *DataType) Serialize(buffer *bytes.Buffer) {
+	json.NewString(d.String()).Serialize(buffer)
 }
