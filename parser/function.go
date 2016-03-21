@@ -16,7 +16,7 @@ type Function struct {
 	exec   AstNode
 }
 
-func (p *Parser) function() (tree AstNode, err Error) {
+func NewFunction(p *Parser) (tree AstNode, err Error) {
 	readCount := 0
 
 	/*Check if it starts with '~' */
@@ -69,7 +69,7 @@ func (p *Parser) function() (tree AstNode, err Error) {
 	}
 
 	/* Check for expression */
-	expr, err := p.expression()
+	expr, err := NewExpression(p)
 	if err != nil {
 		return p.parseError(err.Message(), readCount)
 	} else if expr == nil {

@@ -64,7 +64,7 @@ func branches(p *Parser) (c []AstNode, b []AstNode, err Error) {
 	conds := []AstNode{}
 	branches := []AstNode{}
 	for {
-		if cond, err := p.expression(); err != nil {
+		if cond, err := NewExpression(p); err != nil {
 			return conds, branches, err
 		} else if cond != nil {
 			conds = append(conds, cond)
@@ -72,7 +72,7 @@ func branches(p *Parser) (c []AstNode, b []AstNode, err Error) {
 			break
 		}
 
-		if branch, err := p.expression(); err != nil {
+		if branch, err := NewExpression(p); err != nil {
 			return conds, branches, err
 		} else if branch == nil {
 			return conds, branches, NewSyntaxError("Match expression missing branch")

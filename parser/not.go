@@ -22,7 +22,7 @@ func NewNotExpr(p *Parser) (tree AstNode, err Error) {
 		return p.parseExit(readCount) //Not caller, but data identifier
 	}
 
-	if expr, err := p.expression(); err != nil {
+	if expr, err := NewExpression(p); err != nil {
 		return p.parseError(err.Message(), readCount)
 	} else if expr != nil {
 		node := &Not{exec: expr}

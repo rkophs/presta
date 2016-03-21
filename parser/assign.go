@@ -36,7 +36,7 @@ func NewAssignExpr(p *Parser) (tree AstNode, err Error) {
 	}
 
 	/*Get expression*/
-	if expr, err := p.expression(); err != nil {
+	if expr, err := NewExpression(p); err != nil {
 		return p.parseError(err.Message(), readCount)
 	} else if expr != nil {
 		node := &Assign{name: name, value: expr}

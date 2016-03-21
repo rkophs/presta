@@ -26,7 +26,7 @@ func NewRepeatExpr(p *Parser) (tree AstNode, err Error) {
 
 	/*Get expression*/
 	var condition AstNode
-	if expr, err := p.expression(); err != nil {
+	if expr, err := NewExpression(p); err != nil {
 		return p.parseError(err.Message(), readCount)
 	} else if expr != nil {
 		condition = expr
@@ -35,7 +35,7 @@ func NewRepeatExpr(p *Parser) (tree AstNode, err Error) {
 	}
 
 	/*Get expression*/
-	if expr, err := p.expression(); err != nil {
+	if expr, err := NewExpression(p); err != nil {
 		return p.parseError(err.Message(), readCount)
 	} else if expr != nil {
 		node := &Repeat{condition: condition, exec: expr}

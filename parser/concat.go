@@ -34,7 +34,7 @@ func NewConcatExpr(p *Parser) (tree AstNode, err Error) {
 	/*Get List*/
 	exprs := []AstNode{}
 	for {
-		if expr, err := p.expression(); err != nil {
+		if expr, err := NewExpression(p); err != nil {
 			return p.parseError(err.Message(), readCount)
 		} else if expr != nil {
 			exprs = append(exprs, expr)

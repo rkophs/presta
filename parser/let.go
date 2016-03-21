@@ -60,7 +60,7 @@ func NewLetExpr(p *Parser) (tree AstNode, err Error) {
 	/* Check for assignments */
 	values := []AstNode{}
 	for {
-		if node, err := p.expression(); err != nil {
+		if node, err := NewExpression(p); err != nil {
 			return p.parseError(err.Message(), readCount)
 		} else if node != nil {
 			values = append(values, node)
@@ -81,7 +81,7 @@ func NewLetExpr(p *Parser) (tree AstNode, err Error) {
 		return p.parseError("Missing closing parenthesis for let assignments", readCount)
 	}
 
-	body, err := p.expression()
+	body, err := NewExpression(p)
 	if err != nil {
 		return p.parseError(err.Message(), readCount)
 	} else if body == nil {

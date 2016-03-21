@@ -15,10 +15,10 @@ type BinOp struct {
 }
 
 func NewBinOp(p *Parser, op BinOpType, readCount int) (tree AstNode, err Error) {
-	if l, err := p.expression(); err != nil {
+	if l, err := NewExpression(p); err != nil {
 		return p.parseError(err.Message(), readCount)
 	} else if l != nil {
-		if r, err := p.expression(); err != nil {
+		if r, err := NewExpression(p); err != nil {
 			return p.parseError(err.Message(), readCount)
 		} else if r != nil {
 			node := &BinOp{l: l, r: r, op: op}

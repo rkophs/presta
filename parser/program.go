@@ -23,7 +23,7 @@ func NewProgram(p *Parser) (tree AstNode, err Error) {
 	/*Check for function declarations*/
 	functions := []*Function{}
 	for {
-		if function, err := p.function(); err != nil {
+		if function, err := NewFunction(p); err != nil {
 			return p.parseError(err.Message(), readCount)
 		} else if function != nil {
 			functions = append(functions, function.(*Function))
@@ -33,7 +33,7 @@ func NewProgram(p *Parser) (tree AstNode, err Error) {
 	}
 
 	/*Check for exec*/
-	expr, err := p.expression()
+	expr, err := NewExpression(p)
 	if err != nil {
 		return p.parseError(err.Message(), readCount)
 	} else if expr == nil {

@@ -57,7 +57,7 @@ func NewCallExpr(p *Parser) (tree AstNode, err Error) {
 	/* Check for arguments */
 	args := []AstNode{}
 	for {
-		if expr, err := p.expression(); err != nil {
+		if expr, err := NewExpression(p); err != nil {
 			return p.parseError(err.Message(), readCount)
 		} else if expr != nil {
 			args = append(args, expr)
