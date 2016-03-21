@@ -7,13 +7,43 @@ import (
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
+	"github.com/rkophs/presta/lexer"
 	"github.com/rkophs/presta/semantic"
+	"strconv"
 )
 
 type Data struct {
 	str      string
 	num      float64
 	dataType DataType
+}
+
+func (p *Parser) data() (tree AstNode, yes bool, err Error) {
+	readCount := 1
+	if tok, err := p.read(); err {
+		return p.parseError("Premature end.", readCount)
+	} else if tok.Type() == lexer.STRING {
+		node := &Data{str: tok.Lit(), dataType: STRING}
+		return p.parseValid(node)
+	} else if tok.Type() == lexer.NUMBER {
+		if num, err := strconv.ParseFloat(tok.Lit(), 64); err != nil {
+			return p.parseError("Error parsing numeric.", readCount)
+		} else {
+			node := &Data{num: num, dataType: NUMBER}
+			return p.parseValid(node)
+		}
+	} else if tok.Type() == lexer.IDENTIFIER {
+		if next, err := p.peek(); err {
+			return p.parseError("Premature end.", readCount)
+		} else if next.Type() == lexer.CURLY_OPEN { //Not identifer - but caller
+			p.parseExit(readCount)
+		} else {
+			node := &Variable{name: tok.Lit()}
+			return p.parseValid(node)
+		}
+	}
+
+	return p.parseExit(readCount)
 }
 
 func (d *Data) Type() AstNodeType {

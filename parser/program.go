@@ -18,6 +18,38 @@ func (p *Program) Type() AstNodeType {
 	return PROG
 }
 
+func (p *Parser) program() (tree *Program, yes bool, err Error) {
+	readCount := 0
+	var invalid Program
+
+	/*Check for function declarations*/
+	functions := []*Function{}
+	for {
+		if function, yes, err := p.function(); err != nil {
+			_, yes, err := p.parseError(err.Message(), readCount)
+			return &invalid, yes, err
+		} else if yes {
+			functions = append(functions, function)
+		} else {
+			break
+		}
+	}
+
+	/*Check for exec*/
+	expr, yes, err := p.expression()
+	if err != nil {
+		_, yes, err := p.parseError(err.Message(), readCount)
+		return &invalid, yes, err
+	} else if !yes {
+		_, yes, err := p.parseError("Program must contain an executable expression", readCount)
+		return &invalid, yes, err
+	}
+
+	program := &Program{funcs: functions, exec: expr}
+	_, yes, err = p.parseValid(program)
+	return program, yes, err
+}
+
 func (p *Program) Serialize(buffer *bytes.Buffer) {
 
 	fns := []json.Serializable{}

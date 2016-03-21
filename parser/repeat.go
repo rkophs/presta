@@ -4,12 +4,45 @@ import (
 	"bytes"
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/json"
+	"github.com/rkophs/presta/lexer"
 	"github.com/rkophs/presta/semantic"
 )
 
 type Repeat struct {
 	condition AstNode
 	exec      AstNode
+}
+
+func (p *Parser) repeatExpr() (tree AstNode, yes bool, err Error) {
+	readCount := 0
+
+	/*Check for ^ */
+	readCount++
+	if tok, eof := p.read(); eof {
+		return p.parseError("Premature end.", readCount)
+	} else if tok.Type() != lexer.REPEAT {
+		return p.parseExit(readCount) //Not caller, but data identifier
+	}
+
+	/*Get expression*/
+	var condition AstNode
+	if expr, yes, err := p.expression(); err != nil {
+		return p.parseError(err.Message(), readCount)
+	} else if yes {
+		condition = expr
+	} else {
+		return p.parseError("Repeat op must have condition", readCount)
+	}
+
+	/*Get expression*/
+	if expr, yes, err := p.expression(); err != nil {
+		return p.parseError(err.Message(), readCount)
+	} else if yes {
+		node := &Repeat{condition: condition, exec: expr}
+		return p.parseValid(node)
+	} else {
+		return p.parseError("Repeat op must have body", readCount)
+	}
 }
 
 func (r *Repeat) Type() AstNodeType {

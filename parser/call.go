@@ -5,6 +5,7 @@ import (
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
+	"github.com/rkophs/presta/lexer"
 	"github.com/rkophs/presta/semantic"
 )
 
@@ -28,6 +29,53 @@ func (c *Call) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "params", V: json.NewArray(params)},
 		&json.KV{K: "name", V: json.NewString(c.name)},
 		&json.KV{K: "type", V: json.NewString("CALL")})
+}
+
+func (p *Parser) callExpr() (tree AstNode, yes bool, err Error) {
+
+	readCount := 0
+
+	/*Get variable name*/
+	var name string
+	readCount++
+	if tok, eof := p.read(); eof {
+		return p.parseError("Premature end.", readCount)
+	} else if tok.Type() != lexer.IDENTIFIER {
+		return p.parseExit(readCount)
+	} else {
+		name = tok.Lit()
+	}
+
+	/*Check for bracket*/
+	readCount++
+	if tok, eof := p.read(); eof {
+		return p.parseError("Premature end.", readCount)
+	} else if tok.Type() != lexer.CURLY_OPEN {
+		return p.parseExit(readCount) //Not caller, but data identifier
+	}
+
+	/* Check for arguments */
+	args := []AstNode{}
+	for {
+		if expr, yes, err := p.expression(); err != nil {
+			return p.parseError(err.Message(), readCount)
+		} else if yes {
+			args = append(args, expr)
+		} else {
+			break
+		}
+	}
+
+	/*Check for bracket*/
+	readCount++
+	if tok, eof := p.read(); eof {
+		return p.parseError("Premature end.", readCount)
+	} else if tok.Type() != lexer.CURLY_CLOSE {
+		return p.parseError("Missing closing bracket.", readCount)
+	}
+
+	node := &Call{name: name, params: args}
+	return p.parseValid(node)
 }
 
 func (c *Call) GenerateICG(offset int64, code *icg.Code, s *semantic.Semantic) (int64, Error) {
