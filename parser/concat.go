@@ -77,6 +77,6 @@ func (c *Concat) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("CONCAT")})
 }
 
-func (c *Concat) GenerateICG(offset int64, code *icg.Code, s *semantic.Semantic) (int64, Error) {
-	return -1, nil
+func (c *Concat) GenerateICG(code *icg.Code, s *semantic.Semantic) Error {
+	return nil
 }

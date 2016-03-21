@@ -106,6 +106,6 @@ func (m *Match) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("MATCH")})
 }
 
-func (m *Match) GenerateICG(offset int64, code *icg.Code, s *semantic.Semantic) (int64, Error) {
-	return -1, nil
+func (m *Match) GenerateICG(code *icg.Code, s *semantic.Semantic) Error {
+	return nil
 }

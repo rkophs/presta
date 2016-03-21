@@ -57,6 +57,6 @@ func (r *Repeat) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("REPEAT")})
 }
 
-func (r *Repeat) GenerateICG(offset int64, code *icg.Code, s *semantic.Semantic) (int64, Error) {
-	return -1, nil
+func (r *Repeat) GenerateICG(code *icg.Code, s *semantic.Semantic) Error {
+	return nil
 }

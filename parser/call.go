@@ -78,17 +78,17 @@ func NewCallExpr(p *Parser) (tree AstNode, err Error) {
 	return p.parseValid(node)
 }
 
-func (c *Call) GenerateICG(offset int64, code *icg.Code, s *semantic.Semantic) (int64, Error) {
+func (c *Call) GenerateICG(code *icg.Code, s *semantic.Semantic) Error {
 
 	if !s.FunctionExists(c.name) || s.FunctionArity(c.name) != len(c.params) {
-		return -1, NewSymanticError("Function not found")
+		return NewSymanticError("Function not found")
 	}
 
 	//Generate params
 	offsets := make([]int, len(c.params))
 	for i, p := range c.params {
-		if _, err := p.GenerateICG(-1, code, s); err != nil {
-			return -1, err
+		if err := p.GenerateICG(code, s); err != nil {
+			return err
 		} else {
 			offsets[i] = code.GetFrameOffset()
 			code.Append(ir.NewPush(code.Ax))
@@ -106,5 +106,5 @@ func (c *Call) GenerateICG(offset int64, code *icg.Code, s *semantic.Semantic) (
 	gotoLoc := code.GetFunctionOffset(c.name)
 	code.Append(ir.NewCall(gotoLoc))
 
-	return -1, nil
+	return nil
 }

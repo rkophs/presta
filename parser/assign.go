@@ -58,6 +58,6 @@ func (a *Assign) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("ASSIGN")})
 }
 
-func (p *Assign) GenerateICG(offset int64, code *icg.Code, s *semantic.Semantic) (int64, Error) {
-	return -1, nil
+func (p *Assign) GenerateICG(code *icg.Code, s *semantic.Semantic) Error {
+	return nil
 }

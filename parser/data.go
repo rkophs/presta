@@ -3,7 +3,6 @@ package parser
 import (
 	"bytes"
 	"encoding/hex"
-	"fmt"
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
@@ -66,9 +65,7 @@ func (d *Data) Serialize(buffer *bytes.Buffer) {
 	}
 }
 
-func (d *Data) GenerateICG(doNothing int64, code *icg.Code, s *semantic.Semantic) (int64, Error) {
-
-	fmt.Println("ICG for Data")
+func (d *Data) GenerateICG(code *icg.Code, s *semantic.Semantic) Error {
 
 	var entry ir.StackEntry
 	switch d.dataType {
@@ -81,5 +78,5 @@ func (d *Data) GenerateICG(doNothing int64, code *icg.Code, s *semantic.Semantic
 	}
 
 	code.Append(ir.NewMov(code.Ax, ir.NewConstantAccess(entry)))
-	return -1, nil
+	return nil
 }

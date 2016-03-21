@@ -2,7 +2,6 @@ package parser
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
@@ -45,21 +44,19 @@ func (b *BinOp) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("BINOP")})
 }
 
-func (b *BinOp) GenerateICG(doNotUse int64, code *icg.Code, s *semantic.Semantic) (int64, Error) {
-
-	fmt.Println("ICG for binop")
+func (b *BinOp) GenerateICG(code *icg.Code, s *semantic.Semantic) Error {
 
 	/*Compute left side and push onto stack*/
-	if _, err := b.l.GenerateICG(-1, code, s); err != nil {
-		return -1, err
+	if err := b.l.GenerateICG(code, s); err != nil {
+		return err
 	}
 	laccess := ir.NewStackAccess(code.GetFrameOffset())
 	code.Append(ir.NewPush(code.Ax))
 	code.IncrFrameOffset(1)
 
 	/*Compute right side and push onto stack*/
-	if _, err := b.r.GenerateICG(-1, code, s); err != nil {
-		return -1, err
+	if err := b.r.GenerateICG(code, s); err != nil {
+		return err
 	}
 	raccess := ir.NewStackAccess(code.GetFrameOffset())
 	code.Append(ir.NewPush(code.Ax))
@@ -71,7 +68,7 @@ func (b *BinOp) GenerateICG(doNotUse int64, code *icg.Code, s *semantic.Semantic
 		code.Append(ir.NewMov(code.Ax, laccess))
 		break
 	default:
-		return -1, NewSymanticError("Unsupported binary operation")
+		return NewSymanticError("Unsupported binary operation")
 	}
-	return -1, nil
+	return nil
 }

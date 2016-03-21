@@ -10,8 +10,7 @@ import (
 type AstNode interface {
 	json.Serializable
 	Type() AstNodeType
-	GenerateICG(offset int64, code *icg.Code, s *semantic.Semantic) (int64, Error)
-	//Generate(*Semantic)
+	GenerateICG(code *icg.Code, s *semantic.Semantic) Error
 }
 
 type AstNodeType int64

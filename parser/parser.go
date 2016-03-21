@@ -15,7 +15,7 @@ func NewParser(tokens []lexer.Token) *Parser {
 }
 
 func (p *Parser) Scan() (tree AstNode, err Error) {
-	if tree, err := p.program(); err != nil {
+	if tree, err := NewProgram(p); err != nil {
 		return nil, err
 	} else if tree == nil {
 		return p.parseError("No program available.", 0)

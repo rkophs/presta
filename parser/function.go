@@ -2,7 +2,6 @@ package parser
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
@@ -107,9 +106,8 @@ func (f *Function) Type() AstNodeType {
 	return FUNC
 }
 
-func (f *Function) GenerateICG(doNotUse int64, code *icg.Code, s *semantic.Semantic) (int64, Error) {
+func (f *Function) GenerateICG(code *icg.Code, s *semantic.Semantic) Error {
 
-	fmt.Println("ICG function")
 	//Instantiate stack accessors for each param
 	s.PushNewScope(f.params)
 	for i, p := range f.params {
@@ -117,13 +115,12 @@ func (f *Function) GenerateICG(doNotUse int64, code *icg.Code, s *semantic.Seman
 	}
 
 	//Code generate the body
-	if _, err := f.exec.GenerateICG(-1, code, s); err != nil {
-		fmt.Println("Error2")
-		return -1, err
+	if err := f.exec.GenerateICG(code, s); err != nil {
+		return err
 	}
 
 	//Load result into AX and shrink the stack
 	code.Append(ir.NewResult(code.Ax))
 
-	return -1, nil
+	return nil
 }

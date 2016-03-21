@@ -2,7 +2,6 @@ package parser
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
@@ -24,12 +23,11 @@ func (v *Variable) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("VAR")})
 }
 
-func (v *Variable) GenerateICG(offset int64, code *icg.Code, s *semantic.Semantic) (int64, Error) {
-	fmt.Println("ICG for Variable")
+func (v *Variable) GenerateICG(code *icg.Code, s *semantic.Semantic) Error {
 	if !s.VariableExists(v.name) {
-		return -1, NewSymanticError("Undefined variable.")
+		return NewSymanticError("Undefined variable.")
 	}
 
 	code.Append(ir.NewMov(code.Ax, code.GetVariableLocation(s.GetVariableId(v.name))))
-	return -1, nil
+	return nil
 }
