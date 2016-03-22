@@ -23,6 +23,10 @@ func Compile(r io.Reader) err.Error {
 		return e
 	}
 
+	var buffer1 bytes.Buffer
+	tree.Serialize(&buffer1)
+	fmt.Println(buffer1.String())
+
 	code, e := Generate(tree)
 	if e != nil {
 		return e
