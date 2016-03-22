@@ -2,17 +2,8 @@ package parser
 
 import (
 	"bytes"
-	"github.com/rkophs/presta/err"
-	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/json"
-	"github.com/rkophs/presta/semantic"
 )
-
-type AstNode interface {
-	json.Serializable
-	Type() AstNodeType
-	GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error
-}
 
 type AstNodeType int64
 type MatchType int64

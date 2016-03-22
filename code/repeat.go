@@ -1,4 +1,4 @@
-package parser
+package code
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/json"
 	"github.com/rkophs/presta/lexer"
+	"github.com/rkophs/presta/parser"
 	"github.com/rkophs/presta/semantic"
 )
 
@@ -14,40 +15,40 @@ type Repeat struct {
 	exec      AstNode
 }
 
-func NewRepeatExpr(p *Parser) (tree AstNode, e err.Error) {
+func NewRepeatExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	/*Check for ^ */
 	readCount++
-	if tok, eof := p.read(); eof {
-		return p.parseError("Premature end.", readCount)
+	if tok, eof := p.Read(); eof {
+		return parseError(p, "Premature end.", readCount)
 	} else if tok.Type() != lexer.REPEAT {
-		return p.parseExit(readCount) //Not caller, but data identifier
+		return parseExit(p, readCount) //Not caller, but data identifier
 	}
 
 	/*Get expression*/
 	var condition AstNode
 	if expr, e := NewExpression(p); e != nil {
-		return p.parseError(e.Message(), readCount)
+		return parseError(p, e.Message(), readCount)
 	} else if expr != nil {
 		condition = expr
 	} else {
-		return p.parseError("Repeat op must have condition", readCount)
+		return parseError(p, "Repeat op must have condition", readCount)
 	}
 
 	/*Get expression*/
 	if expr, e := NewExpression(p); e != nil {
-		return p.parseError(e.Message(), readCount)
+		return parseError(p, e.Message(), readCount)
 	} else if expr != nil {
 		node := &Repeat{condition: condition, exec: expr}
-		return p.parseValid(node)
+		return parseValid(p, node)
 	} else {
-		return p.parseError("Repeat op must have body", readCount)
+		return parseError(p, "Repeat op must have body", readCount)
 	}
 }
 
-func (r *Repeat) Type() AstNodeType {
-	return REPEAT
+func (r *Repeat) Type() parser.AstNodeType {
+	return parser.REPEAT
 }
 
 func (r *Repeat) Serialize(buffer *bytes.Buffer) {

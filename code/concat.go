@@ -1,4 +1,4 @@
-package parser
+package code
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/json"
 	"github.com/rkophs/presta/lexer"
+	"github.com/rkophs/presta/parser"
 	"github.com/rkophs/presta/semantic"
 )
 
@@ -13,30 +14,30 @@ type Concat struct {
 	components []AstNode
 }
 
-func NewConcatExpr(p *Parser) (tree AstNode, e err.Error) {
+func NewConcatExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	/* Get '.' */
 	readCount++
-	if tok, eof := p.read(); eof {
-		return p.parseError("Premature end.", readCount)
+	if tok, eof := p.Read(); eof {
+		return parseError(p, "Premature end.", readCount)
 	} else if tok.Type() != lexer.CONCAT {
-		return p.parseExit(readCount)
+		return parseExit(p, readCount)
 	}
 
 	/*Check for parenthesis*/
 	readCount++
-	if tok, eof := p.read(); eof {
-		return p.parseError("Premature end.", readCount)
+	if tok, eof := p.Read(); eof {
+		return parseError(p, "Premature end.", readCount)
 	} else if tok.Type() != lexer.PAREN_OPEN {
-		return p.parseError("Missing opening parenthesis for concat", readCount)
+		return parseError(p, "Missing opening parenthesis for concat", readCount)
 	}
 
 	/*Get List*/
 	exprs := []AstNode{}
 	for {
 		if expr, e := NewExpression(p); e != nil {
-			return p.parseError(e.Message(), readCount)
+			return parseError(p, e.Message(), readCount)
 		} else if expr != nil {
 			exprs = append(exprs, expr)
 		} else {
@@ -44,8 +45,8 @@ func NewConcatExpr(p *Parser) (tree AstNode, e err.Error) {
 		}
 
 		/*Exit on closing parenthesis*/
-		if tok, eof := p.peek(); eof {
-			return p.parseError("Premature end.", readCount)
+		if tok, eof := p.Peek(); eof {
+			return parseError(p, "Premature end.", readCount)
 		} else if tok.Type() == lexer.PAREN_CLOSE {
 			break
 		}
@@ -53,18 +54,18 @@ func NewConcatExpr(p *Parser) (tree AstNode, e err.Error) {
 
 	/*Check for parenthesis*/
 	readCount++
-	if tok, eof := p.read(); eof {
-		return p.parseError("Premature end.", readCount)
+	if tok, eof := p.Read(); eof {
+		return parseError(p, "Premature end.", readCount)
 	} else if tok.Type() != lexer.PAREN_CLOSE {
-		return p.parseError("Missing closing parenthesis for concat", readCount)
+		return parseError(p, "Missing closing parenthesis for concat", readCount)
 	}
 
 	node := &Concat{components: exprs}
-	return p.parseValid(node)
+	return parseValid(p, node)
 }
 
-func (c *Concat) Type() AstNodeType {
-	return CONCAT
+func (c *Concat) Type() parser.AstNodeType {
+	return parser.CONCAT
 }
 
 func (c *Concat) Serialize(buffer *bytes.Buffer) {

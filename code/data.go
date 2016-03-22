@@ -1,4 +1,4 @@
-package parser
+package code
 
 import (
 	"bytes"
@@ -8,6 +8,7 @@ import (
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
 	"github.com/rkophs/presta/lexer"
+	"github.com/rkophs/presta/parser"
 	"github.com/rkophs/presta/semantic"
 	"strconv"
 )
@@ -15,43 +16,43 @@ import (
 type Data struct {
 	str      string
 	num      float64
-	dataType DataType
+	dataType parser.DataType
 }
 
-func NewData(p *Parser) (tree AstNode, e err.Error) {
+func NewData(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount := 1
-	if tok, e := p.read(); e {
-		return p.parseError("Premature end.", readCount)
+	if tok, e := p.Read(); e {
+		return parseError(p, "Premature end.", readCount)
 	} else if tok.Type() == lexer.STRING {
-		node := &Data{str: tok.Lit(), dataType: STRING}
-		return p.parseValid(node)
+		node := &Data{str: tok.Lit(), dataType: parser.STRING}
+		return parseValid(p, node)
 	} else if tok.Type() == lexer.NUMBER {
 		if num, e := strconv.ParseFloat(tok.Lit(), 64); e != nil {
-			return p.parseError("Error parsing numeric.", readCount)
+			return parseError(p, "Error parsing numeric.", readCount)
 		} else {
-			node := &Data{num: num, dataType: NUMBER}
-			return p.parseValid(node)
+			node := &Data{num: num, dataType: parser.NUMBER}
+			return parseValid(p, node)
 		}
 	} else if tok.Type() == lexer.IDENTIFIER {
-		if next, e := p.peek(); e {
-			return p.parseError("Premature end.", readCount)
+		if next, e := p.Peek(); e {
+			return parseError(p, "Premature end.", readCount)
 		} else if next.Type() == lexer.CURLY_OPEN { //Not identifer - but caller
-			p.parseExit(readCount)
+			parseExit(p, readCount)
 		} else {
 			node := &Variable{name: tok.Lit()}
-			return p.parseValid(node)
+			return parseValid(p, node)
 		}
 	}
 
-	return p.parseExit(readCount)
+	return parseExit(p, readCount)
 }
 
-func (d *Data) Type() AstNodeType {
-	return DATA
+func (d *Data) Type() parser.AstNodeType {
+	return parser.DATA
 }
 
 func (d *Data) Serialize(buffer *bytes.Buffer) {
-	if d.dataType == NUMBER {
+	if d.dataType == parser.NUMBER {
 		json.BuildMap(buffer,
 			&json.KV{K: "dataType", V: json.NewString(d.dataType.String())},
 			&json.KV{K: "value", V: json.NewNumber(d.num)},
@@ -70,10 +71,10 @@ func (d *Data) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
 
 	var entry ir.StackEntry
 	switch d.dataType {
-	case STRING:
+	case parser.STRING:
 		entry = ir.NewString(d.str)
 		break
-	case NUMBER:
+	case parser.NUMBER:
 		entry = ir.NewNumber(d.num)
 		break
 	}

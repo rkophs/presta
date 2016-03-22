@@ -3,6 +3,7 @@ package presta
 import (
 	"bytes"
 	"fmt"
+	"github.com/rkophs/presta/code"
 	"github.com/rkophs/presta/err"
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/lexer"
@@ -34,7 +35,7 @@ func Compile(r io.Reader) err.Error {
 	return nil
 }
 
-func Generate(tree parser.AstNode) (*icg.Code, err.Error) {
+func Generate(tree code.AstNode) (*icg.Code, err.Error) {
 	code := icg.NewCode()
 	s := semantic.NewSemantic()
 	if err := tree.GenerateICG(code, s); err != nil {
@@ -43,9 +44,9 @@ func Generate(tree parser.AstNode) (*icg.Code, err.Error) {
 	return code, nil
 }
 
-func Parse(tokens []lexer.Token) (tree parser.AstNode, e err.Error) {
+func Parse(tokens []lexer.Token) (tree code.AstNode, e err.Error) {
 	p := parser.NewParser(tokens)
-	return parser.NewProgram(p)
+	return code.NewProgram(p)
 }
 
 func Tokenize(reader io.Reader) (tokens []lexer.Token, e err.Error) {

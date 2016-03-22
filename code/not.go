@@ -1,4 +1,4 @@
-package parser
+package code
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/json"
 	"github.com/rkophs/presta/lexer"
+	"github.com/rkophs/presta/parser"
 	"github.com/rkophs/presta/semantic"
 )
 
@@ -13,29 +14,29 @@ type Not struct {
 	exec AstNode
 }
 
-func NewNotExpr(p *Parser) (tree AstNode, e err.Error) {
+func NewNotExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount := 0
 	/*Check for ! */
 	readCount++
-	if tok, eof := p.read(); eof {
-		return p.parseError("Premature end.", readCount)
+	if tok, eof := p.Read(); eof {
+		return parseError(p, "Premature end.", readCount)
 	} else if tok.Type() != lexer.NOT {
-		return p.parseExit(readCount) //Not caller, but data identifier
+		return parseExit(p, readCount) //Not caller, but data identifier
 	}
 
 	if expr, e := NewExpression(p); e != nil {
-		return p.parseError(e.Message(), readCount)
+		return parseError(p, e.Message(), readCount)
 	} else if expr != nil {
 		node := &Not{exec: expr}
-		return p.parseValid(node)
+		return parseValid(p, node)
 	} else {
-		return p.parseError("Not operator must precede expression", readCount)
+		return parseError(p, "Not operator must precede expression", readCount)
 	}
 
 }
 
-func (n *Not) Type() AstNodeType {
-	return NOT
+func (n *Not) Type() parser.AstNodeType {
+	return parser.NOT
 }
 
 func (n *Not) Serialize(buffer *bytes.Buffer) {

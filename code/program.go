@@ -1,4 +1,4 @@
-package parser
+package code
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
+	"github.com/rkophs/presta/parser"
 	"github.com/rkophs/presta/semantic"
 )
 
@@ -14,18 +15,18 @@ type Program struct {
 	exec  AstNode
 }
 
-func (p *Program) Type() AstNodeType {
-	return PROG
+func (p *Program) Type() parser.AstNodeType {
+	return parser.PROG
 }
 
-func NewProgram(p *Parser) (tree AstNode, e err.Error) {
+func NewProgram(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	/*Check for function declarations*/
 	functions := []*Function{}
 	for {
 		if function, e := NewFunction(p); e != nil {
-			return p.parseError(e.Message(), readCount)
+			return parseError(p, e.Message(), readCount)
 		} else if function != nil {
 			functions = append(functions, function.(*Function))
 		} else {
@@ -36,13 +37,13 @@ func NewProgram(p *Parser) (tree AstNode, e err.Error) {
 	/*Check for exec*/
 	expr, err := NewExpression(p)
 	if err != nil {
-		return p.parseError(e.Message(), readCount)
+		return parseError(p, e.Message(), readCount)
 	} else if expr == nil {
-		return p.parseError("Program must contain an executable expression", readCount)
+		return parseError(p, "Program must contain an executable expression", readCount)
 	}
 
 	program := &Program{funcs: functions, exec: expr}
-	return p.parseValid(program)
+	return parseValid(p, program)
 }
 
 func (p *Program) Serialize(buffer *bytes.Buffer) {

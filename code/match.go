@@ -1,4 +1,4 @@
-package parser
+package code
 
 import (
 	"bytes"
@@ -6,62 +6,63 @@ import (
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/json"
 	"github.com/rkophs/presta/lexer"
+	"github.com/rkophs/presta/parser"
 	"github.com/rkophs/presta/semantic"
 )
 
 type Match struct {
 	conditions []AstNode
 	branches   []AstNode
-	matchType  MatchType
+	matchType  parser.MatchType
 }
 
-func NewMatchExpr(p *Parser) (tree AstNode, e err.Error) {
+func NewMatchExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	/*Get '@' or '|' */
-	var matchType MatchType
+	var matchType parser.MatchType
 	readCount++
-	if tok, eof := p.read(); eof {
-		return p.parseError("Premature end.", readCount)
+	if tok, eof := p.Read(); eof {
+		return parseError(p, "Premature end.", readCount)
 	} else if tok.Type() == lexer.MATCH_ALL {
-		matchType = ALL
+		matchType = parser.ALL
 	} else if tok.Type() == lexer.MATCH_FIRST {
-		matchType = FIRST
+		matchType = parser.FIRST
 	} else {
-		return p.parseExit(readCount)
+		return parseExit(p, readCount)
 	}
 
 	/*Check for parenthesis*/
 	readCount++
-	if tok, eof := p.read(); eof {
-		return p.parseError("Premature end.", readCount)
+	if tok, eof := p.Read(); eof {
+		return parseError(p, "Premature end.", readCount)
 	} else if tok.Type() != lexer.PAREN_OPEN {
-		return p.parseError("Missing opening parenthesis for match", readCount)
+		return parseError(p, "Missing opening parenthesis for match", readCount)
 	}
 
 	/*Get branches*/
 	conditions, branches, err := branches(p)
 	if err != nil {
-		return p.parseError(err.Message(), readCount)
+		return parseError(p, err.Message(), readCount)
 	}
 
 	if len(conditions) != len(branches) || len(conditions) == 0 {
-		return p.parseError("Invalid number of conditions and branches", readCount)
+		return parseError(p, "Invalid number of conditions and branches", readCount)
 	}
 
 	/*Check for parenthesis*/
 	readCount++
-	if tok, eof := p.read(); eof {
-		return p.parseError("Premature end.", readCount)
+	if tok, eof := p.Read(); eof {
+		return parseError(p, "Premature end.", readCount)
 	} else if tok.Type() != lexer.PAREN_CLOSE {
-		return p.parseError("Missing closing parenthesis for match", readCount)
+		return parseError(p, "Missing closing parenthesis for match", readCount)
 	}
 
 	node := &Match{conditions: conditions, branches: branches, matchType: matchType}
-	return p.parseValid(node)
+	return parseValid(p, node)
 }
 
-func branches(p *Parser) (c []AstNode, b []AstNode, e err.Error) {
+func branches(p *parser.Parser) (c []AstNode, b []AstNode, e err.Error) {
 	conds := []AstNode{}
 	branches := []AstNode{}
 	for {
@@ -85,8 +86,8 @@ func branches(p *Parser) (c []AstNode, b []AstNode, e err.Error) {
 	return conds, branches, nil
 }
 
-func (m *Match) Type() AstNodeType {
-	return MATCH
+func (m *Match) Type() parser.AstNodeType {
+	return parser.MATCH
 }
 
 func (m *Match) Serialize(buffer *bytes.Buffer) {

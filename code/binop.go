@@ -1,4 +1,4 @@
-package parser
+package code
 
 import (
 	"bytes"
@@ -6,34 +6,35 @@ import (
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
+	"github.com/rkophs/presta/parser"
 	"github.com/rkophs/presta/semantic"
 )
 
 type BinOp struct {
 	l  AstNode
 	r  AstNode
-	op BinOpType
+	op parser.BinOpType
 }
 
-func NewBinOp(p *Parser, op BinOpType, readCount int) (tree AstNode, e err.Error) {
+func NewBinOp(p *parser.Parser, op parser.BinOpType, readCount int) (tree AstNode, e err.Error) {
 	if l, e := NewExpression(p); e != nil {
-		return p.parseError(e.Message(), readCount)
+		return parseError(p, e.Message(), readCount)
 	} else if l != nil {
 		if r, e := NewExpression(p); e != nil {
-			return p.parseError(e.Message(), readCount)
+			return parseError(p, e.Message(), readCount)
 		} else if r != nil {
 			node := &BinOp{l: l, r: r, op: op}
-			return p.parseValid(node)
+			return parseValid(p, node)
 		} else {
-			return p.parseError("Binary op needs another expression.", readCount)
+			return parseError(p, "Binary op needs another expression.", readCount)
 		}
 	} else {
-		return p.parseError("Binary operation needs 2 expressions.", readCount)
+		return parseError(p, "Binary operation needs 2 expressions.", readCount)
 	}
 }
 
-func (b *BinOp) Type() AstNodeType {
-	return BIN_OP
+func (b *BinOp) Type() parser.AstNodeType {
+	return parser.BIN_OP
 }
 
 func (b *BinOp) Serialize(buffer *bytes.Buffer) {
@@ -64,7 +65,7 @@ func (b *BinOp) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
 	code.IncrFrameOffset(1)
 
 	switch b.op {
-	case ADD:
+	case parser.ADD:
 		code.Append(ir.NewAdd(laccess, raccess)) //Adds and puts result location
 		code.Append(ir.NewMov(code.Ax, laccess))
 		break

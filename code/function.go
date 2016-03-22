@@ -1,4 +1,4 @@
-package parser
+package code
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
 	"github.com/rkophs/presta/lexer"
+	"github.com/rkophs/presta/parser"
 	"github.com/rkophs/presta/semantic"
 )
 
@@ -17,76 +18,76 @@ type Function struct {
 	exec   AstNode
 }
 
-func NewFunction(p *Parser) (tree AstNode, e err.Error) {
+func NewFunction(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	/*Check if it starts with '~' */
 	readCount++
-	if tok, eof := p.read(); eof {
-		return p.parseError("Premature end.", readCount)
+	if tok, eof := p.Read(); eof {
+		return parseError(p, "Premature end.", readCount)
 	} else if tok.Type() != lexer.FUNC {
-		return p.parseExit(readCount)
+		return parseExit(p, readCount)
 	}
 
 	/*Check for identifier*/
 	readCount++
-	tok, eof := p.read()
+	tok, eof := p.Read()
 	if eof {
-		return p.parseError("Premature end.", readCount)
+		return parseError(p, "Premature end.", readCount)
 	} else if tok.Type() != lexer.IDENTIFIER {
-		return p.parseError("Function name must follow ~", readCount)
+		return parseError(p, "Function name must follow ~", readCount)
 	}
 	funcName := tok.Lit()
 
 	/* Check for parenthesis */
 	readCount++
-	if tok, eof := p.read(); eof {
-		return p.parseError("Premature end.", readCount)
+	if tok, eof := p.Read(); eof {
+		return parseError(p, "Premature end.", readCount)
 	} else if tok.Type() != lexer.PAREN_OPEN {
-		return p.parseError("Parenthesis must follow function name", readCount)
+		return parseError(p, "Parenthesis must follow function name", readCount)
 	}
 
 	/* Check for param names */
 	params := []string{}
 	for {
 		readCount++
-		if tok, eof := p.read(); eof {
-			return p.parseError("Premature end.", readCount)
+		if tok, eof := p.Read(); eof {
+			return parseError(p, "Premature end.", readCount)
 		} else if tok.Type() == lexer.IDENTIFIER {
 			params = append(params, tok.Lit())
 		} else if tok.Type() == lexer.PAREN_CLOSE {
 			break
 		} else {
-			return p.parseError("Looking for parameter identifiers for function", readCount)
+			return parseError(p, "Looking for parameter identifiers for function", readCount)
 		}
 	}
 
 	/*Check for parenthesis*/
 	readCount++
-	if tok, eof := p.read(); eof {
-		return p.parseError("Premature end.", readCount)
+	if tok, eof := p.Read(); eof {
+		return parseError(p, "Premature end.", readCount)
 	} else if tok.Type() != lexer.PAREN_OPEN {
-		return p.parseError("'(' must prefix function body", readCount)
+		return parseError(p, "'(' must prefix function body", readCount)
 	}
 
 	/* Check for expression */
 	expr, err := NewExpression(p)
 	if err != nil {
-		return p.parseError(err.Message(), readCount)
+		return parseError(p, err.Message(), readCount)
 	} else if expr == nil {
-		return p.parseError("Function body must be an executable expression", readCount)
+		return parseError(p, "Function body must be an executable expression", readCount)
 	}
 
 	/*Check for parenthesis*/
 	readCount++
-	if tok, eof := p.read(); eof {
-		return p.parseError("Premature end.", readCount)
+	if tok, eof := p.Read(); eof {
+		return parseError(p, "Premature end.", readCount)
 	} else if tok.Type() != lexer.PAREN_CLOSE {
-		return p.parseError("Parenthesis must postfix function body", readCount)
+		return parseError(p, "Parenthesis must postfix function body", readCount)
 	}
 
 	node := &Function{name: funcName, params: params, exec: expr}
-	return p.parseValid(node)
+	return parseValid(p, node)
 }
 
 func (p *Function) Serialize(buffer *bytes.Buffer) {
@@ -103,8 +104,8 @@ func (p *Function) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("FUNC")})
 }
 
-func (f *Function) Type() AstNodeType {
-	return FUNC
+func (f *Function) Type() parser.AstNodeType {
+	return parser.FUNC
 }
 
 func (f *Function) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {

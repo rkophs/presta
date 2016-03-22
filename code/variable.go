@@ -1,4 +1,4 @@
-package parser
+package code
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
+	"github.com/rkophs/presta/parser"
 	"github.com/rkophs/presta/semantic"
 )
 
@@ -13,8 +14,8 @@ type Variable struct {
 	name string
 }
 
-func (v *Variable) Type() AstNodeType {
-	return VAR
+func (v *Variable) Type() parser.AstNodeType {
+	return parser.VAR
 }
 
 func (v *Variable) Serialize(buffer *bytes.Buffer) {
