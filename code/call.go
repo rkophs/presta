@@ -6,7 +6,6 @@ import (
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
-	"github.com/rkophs/presta/lexer"
 	"github.com/rkophs/presta/parser"
 	"github.com/rkophs/presta/semantic"
 )
@@ -25,7 +24,7 @@ func NewCallExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount++
 	if tok, eof := p.Read(); eof {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() != lexer.IDENTIFIER {
+	} else if tok.Type() != parser.IDENTIFIER {
 		return parseExit(p, readCount)
 	} else {
 		name = tok.Lit()
@@ -35,7 +34,7 @@ func NewCallExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount++
 	if tok, eof := p.Read(); eof {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() != lexer.CURLY_OPEN {
+	} else if tok.Type() != parser.CURLY_OPEN {
 		return parseExit(p, readCount) //Not caller, but data identifier
 	}
 
@@ -55,7 +54,7 @@ func NewCallExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount++
 	if tok, eof := p.Read(); eof {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() != lexer.CURLY_CLOSE {
+	} else if tok.Type() != parser.CURLY_CLOSE {
 		return parseError(p, "Missing closing bracket.", readCount)
 	}
 

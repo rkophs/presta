@@ -1,15 +1,11 @@
 package parser
 
-import (
-	"github.com/rkophs/presta/lexer"
-)
-
 type Parser struct {
-	tokens []lexer.Token
+	tokens []Token
 	at     int
 }
 
-func NewParser(tokens []lexer.Token) *Parser {
+func NewParser(tokens []Token) *Parser {
 	return &Parser{tokens: tokens, at: 0}
 }
 
@@ -19,7 +15,7 @@ func (p *Parser) RollBack(amount int) {
 	}
 }
 
-func (p *Parser) Read() (tok lexer.Token, eof bool) {
+func (p *Parser) Read() (tok Token, eof bool) {
 	tok, eof = p.Peek()
 	if !eof {
 		p.at++
@@ -27,9 +23,9 @@ func (p *Parser) Read() (tok lexer.Token, eof bool) {
 	return tok, eof
 }
 
-func (p *Parser) Peek() (tok lexer.Token, eof bool) {
+func (p *Parser) Peek() (tok Token, eof bool) {
 	if p.at >= len(p.tokens) {
-		var ret lexer.Token
+		var ret Token
 		return ret, true
 	}
 	tok = p.tokens[p.at]

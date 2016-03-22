@@ -7,7 +7,6 @@ import (
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
-	"github.com/rkophs/presta/lexer"
 	"github.com/rkophs/presta/parser"
 	"github.com/rkophs/presta/semantic"
 	"strconv"
@@ -23,20 +22,20 @@ func NewData(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount := 1
 	if tok, e := p.Read(); e {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() == lexer.STRING {
+	} else if tok.Type() == parser.STRING {
 		node := &Data{str: tok.Lit(), dataType: STRING}
 		return parseValid(p, node)
-	} else if tok.Type() == lexer.NUMBER {
+	} else if tok.Type() == parser.NUMBER {
 		if num, e := strconv.ParseFloat(tok.Lit(), 64); e != nil {
 			return parseError(p, "Error parsing numeric.", readCount)
 		} else {
 			node := &Data{num: num, dataType: NUMBER}
 			return parseValid(p, node)
 		}
-	} else if tok.Type() == lexer.IDENTIFIER {
+	} else if tok.Type() == parser.IDENTIFIER {
 		if next, e := p.Peek(); e {
 			return parseError(p, "Premature end.", readCount)
-		} else if next.Type() == lexer.CURLY_OPEN { //Not identifer - but caller
+		} else if next.Type() == parser.CURLY_OPEN { //Not identifer - but caller
 			parseExit(p, readCount)
 		} else {
 			node := &Variable{name: tok.Lit()}

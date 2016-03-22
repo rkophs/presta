@@ -5,7 +5,6 @@ import (
 	"github.com/rkophs/presta/err"
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/json"
-	"github.com/rkophs/presta/lexer"
 	"github.com/rkophs/presta/parser"
 	"github.com/rkophs/presta/semantic"
 )
@@ -21,7 +20,7 @@ func NewConcatExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount++
 	if tok, eof := p.Read(); eof {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() != lexer.CONCAT {
+	} else if tok.Type() != parser.CONCAT {
 		return parseExit(p, readCount)
 	}
 
@@ -29,7 +28,7 @@ func NewConcatExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount++
 	if tok, eof := p.Read(); eof {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() != lexer.PAREN_OPEN {
+	} else if tok.Type() != parser.PAREN_OPEN {
 		return parseError(p, "Missing opening parenthesis for concat", readCount)
 	}
 
@@ -47,7 +46,7 @@ func NewConcatExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 		/*Exit on closing parenthesis*/
 		if tok, eof := p.Peek(); eof {
 			return parseError(p, "Premature end.", readCount)
-		} else if tok.Type() == lexer.PAREN_CLOSE {
+		} else if tok.Type() == parser.PAREN_CLOSE {
 			break
 		}
 	}
@@ -56,7 +55,7 @@ func NewConcatExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount++
 	if tok, eof := p.Read(); eof {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() != lexer.PAREN_CLOSE {
+	} else if tok.Type() != parser.PAREN_CLOSE {
 		return parseError(p, "Missing closing parenthesis for concat", readCount)
 	}
 

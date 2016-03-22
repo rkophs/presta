@@ -5,7 +5,6 @@ import (
 	"github.com/rkophs/presta/err"
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/json"
-	"github.com/rkophs/presta/lexer"
 	"github.com/rkophs/presta/parser"
 	"github.com/rkophs/presta/semantic"
 )
@@ -24,9 +23,9 @@ func NewMatchExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount++
 	if tok, eof := p.Read(); eof {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() == lexer.MATCH_ALL {
+	} else if tok.Type() == parser.MATCH_ALL {
 		matchType = ALL
-	} else if tok.Type() == lexer.MATCH_FIRST {
+	} else if tok.Type() == parser.MATCH_FIRST {
 		matchType = FIRST
 	} else {
 		return parseExit(p, readCount)
@@ -36,7 +35,7 @@ func NewMatchExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount++
 	if tok, eof := p.Read(); eof {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() != lexer.PAREN_OPEN {
+	} else if tok.Type() != parser.PAREN_OPEN {
 		return parseError(p, "Missing opening parenthesis for match", readCount)
 	}
 
@@ -54,7 +53,7 @@ func NewMatchExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount++
 	if tok, eof := p.Read(); eof {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() != lexer.PAREN_CLOSE {
+	} else if tok.Type() != parser.PAREN_CLOSE {
 		return parseError(p, "Missing closing parenthesis for match", readCount)
 	}
 

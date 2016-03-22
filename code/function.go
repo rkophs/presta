@@ -6,7 +6,6 @@ import (
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
-	"github.com/rkophs/presta/lexer"
 	"github.com/rkophs/presta/parser"
 	"github.com/rkophs/presta/semantic"
 )
@@ -25,7 +24,7 @@ func NewFunction(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount++
 	if tok, eof := p.Read(); eof {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() != lexer.FUNC {
+	} else if tok.Type() != parser.FUNC {
 		return parseExit(p, readCount)
 	}
 
@@ -34,7 +33,7 @@ func NewFunction(p *parser.Parser) (tree AstNode, e err.Error) {
 	tok, eof := p.Read()
 	if eof {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() != lexer.IDENTIFIER {
+	} else if tok.Type() != parser.IDENTIFIER {
 		return parseError(p, "Function name must follow ~", readCount)
 	}
 	funcName := tok.Lit()
@@ -43,7 +42,7 @@ func NewFunction(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount++
 	if tok, eof := p.Read(); eof {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() != lexer.PAREN_OPEN {
+	} else if tok.Type() != parser.PAREN_OPEN {
 		return parseError(p, "Parenthesis must follow function name", readCount)
 	}
 
@@ -53,9 +52,9 @@ func NewFunction(p *parser.Parser) (tree AstNode, e err.Error) {
 		readCount++
 		if tok, eof := p.Read(); eof {
 			return parseError(p, "Premature end.", readCount)
-		} else if tok.Type() == lexer.IDENTIFIER {
+		} else if tok.Type() == parser.IDENTIFIER {
 			params = append(params, tok.Lit())
-		} else if tok.Type() == lexer.PAREN_CLOSE {
+		} else if tok.Type() == parser.PAREN_CLOSE {
 			break
 		} else {
 			return parseError(p, "Looking for parameter identifiers for function", readCount)
@@ -66,7 +65,7 @@ func NewFunction(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount++
 	if tok, eof := p.Read(); eof {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() != lexer.PAREN_OPEN {
+	} else if tok.Type() != parser.PAREN_OPEN {
 		return parseError(p, "'(' must prefix function body", readCount)
 	}
 
@@ -82,7 +81,7 @@ func NewFunction(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount++
 	if tok, eof := p.Read(); eof {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() != lexer.PAREN_CLOSE {
+	} else if tok.Type() != parser.PAREN_CLOSE {
 		return parseError(p, "Parenthesis must postfix function body", readCount)
 	}
 

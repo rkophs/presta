@@ -5,7 +5,6 @@ import (
 	"github.com/rkophs/presta/err"
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/json"
-	"github.com/rkophs/presta/lexer"
 	"github.com/rkophs/presta/parser"
 	"github.com/rkophs/presta/semantic"
 )
@@ -20,7 +19,7 @@ func NewNotExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount++
 	if tok, eof := p.Read(); eof {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() != lexer.NOT {
+	} else if tok.Type() != parser.NOT {
 		return parseExit(p, readCount) //Not caller, but data identifier
 	}
 

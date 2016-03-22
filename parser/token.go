@@ -1,4 +1,4 @@
-package lexer
+package parser
 
 // Token represents a lexical token.
 

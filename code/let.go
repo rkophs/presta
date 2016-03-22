@@ -5,7 +5,6 @@ import (
 	"github.com/rkophs/presta/err"
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/json"
-	"github.com/rkophs/presta/lexer"
 	"github.com/rkophs/presta/parser"
 	"github.com/rkophs/presta/semantic"
 )
@@ -23,7 +22,7 @@ func NewLetExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount++
 	if tok, eof := p.Read(); eof {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() != lexer.ASSIGN {
+	} else if tok.Type() != parser.ASSIGN {
 		return parseExit(p, readCount)
 	}
 
@@ -31,7 +30,7 @@ func NewLetExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount++
 	if tok, eof := p.Read(); eof {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() != lexer.PAREN_OPEN {
+	} else if tok.Type() != parser.PAREN_OPEN {
 		// probably an assignment at this point
 		return parseExit(p, readCount)
 	}
@@ -42,9 +41,9 @@ func NewLetExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 		readCount++
 		if tok, eof := p.Read(); eof {
 			return parseError(p, "Premature end.", readCount)
-		} else if tok.Type() == lexer.IDENTIFIER {
+		} else if tok.Type() == parser.IDENTIFIER {
 			params = append(params, tok.Lit())
-		} else if tok.Type() == lexer.PAREN_CLOSE {
+		} else if tok.Type() == parser.PAREN_CLOSE {
 			break
 		} else {
 			return parseError(p, "Looking for parameter identifiers for function", readCount)
@@ -55,7 +54,7 @@ func NewLetExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount++
 	if tok, eof := p.Read(); eof {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() != lexer.PAREN_OPEN {
+	} else if tok.Type() != parser.PAREN_OPEN {
 		return parseError(p, "Missing opening parenthesis for let assignments", readCount)
 	}
 
@@ -79,7 +78,7 @@ func NewLetExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount++
 	if tok, eof := p.Read(); eof {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() != lexer.PAREN_CLOSE {
+	} else if tok.Type() != parser.PAREN_CLOSE {
 		return parseError(p, "Missing closing parenthesis for let assignments", readCount)
 	}
 

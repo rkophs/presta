@@ -2,7 +2,6 @@ package code
 
 import (
 	"github.com/rkophs/presta/err"
-	"github.com/rkophs/presta/lexer"
 	"github.com/rkophs/presta/parser"
 )
 
@@ -14,7 +13,7 @@ func NewExpression(p *parser.Parser) (tree AstNode, e err.Error) {
 	/*Check for parenthesis*/
 	if tok, eof := p.Peek(); eof {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() == lexer.PAREN_OPEN {
+	} else if tok.Type() == parser.PAREN_OPEN {
 		readCount++
 		p.Read()
 		parens = true
@@ -64,7 +63,7 @@ func validExprEnding(p *parser.Parser, node AstNode, hasOpening bool, readCount 
 func closeParen(p *parser.Parser) (yes bool, e err.Error) {
 	if tok, eof := p.Peek(); eof {
 		return false, err.NewSyntaxError("Premature end.")
-	} else if tok.Type() != lexer.PAREN_CLOSE {
+	} else if tok.Type() != parser.PAREN_CLOSE {
 		return false, nil
 	} else {
 		p.Read()
@@ -118,9 +117,9 @@ func parseIncrExpression(p *parser.Parser) (tree AstNode, e err.Error) {
 	tok, eof := p.Read()
 	if eof {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() == lexer.INC {
+	} else if tok.Type() == parser.INC {
 		opType = ADD_I
-	} else if tok.Type() == lexer.DEC {
+	} else if tok.Type() == parser.DEC {
 		opType = SUB_I
 	} else {
 		return parseExit(p, readCount)
@@ -131,7 +130,7 @@ func parseIncrExpression(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount++
 	if tok, eof = p.Read(); eof {
 		return parseError(p, "Premature end.", readCount)
-	} else if tok.Type() != lexer.IDENTIFIER {
+	} else if tok.Type() != parser.IDENTIFIER {
 		return parseError(p, "Inc/Dec operator must precede an identifier", readCount)
 	} else {
 		name := tok.Lit()
@@ -164,41 +163,41 @@ func parseBinaryExpression(p *parser.Parser) (tree AstNode, e err.Error) {
 		return parseError(p, "Premature end.", readCount)
 	}
 	switch tok.Type() {
-	case lexer.GT:
+	case parser.GT:
 		return NewBinOp(p, GT, readCount)
-	case lexer.LT:
+	case parser.LT:
 		return NewBinOp(p, LT, readCount)
-	case lexer.GTE:
+	case parser.GTE:
 		return NewBinOp(p, GTE, readCount)
-	case lexer.LTE:
+	case parser.LTE:
 		return NewBinOp(p, LTE, readCount)
-	case lexer.EQ:
+	case parser.EQ:
 		return NewBinOp(p, EQ, readCount)
-	case lexer.NEQ:
+	case parser.NEQ:
 		return NewBinOp(p, NEQ, readCount)
-	case lexer.OR:
+	case parser.OR:
 		return NewBinOp(p, OR, readCount)
-	case lexer.AND:
+	case parser.AND:
 		return NewBinOp(p, AND, readCount)
-	case lexer.ADD:
+	case parser.ADD:
 		return NewBinOp(p, ADD, readCount)
-	case lexer.SUB:
+	case parser.SUB:
 		return NewBinOp(p, SUB, readCount)
-	case lexer.MULT:
+	case parser.MULT:
 		return NewBinOp(p, MULT, readCount)
-	case lexer.DIV:
+	case parser.DIV:
 		return NewBinOp(p, DIV, readCount)
-	case lexer.MOD:
+	case parser.MOD:
 		return NewBinOp(p, MOD, readCount)
-	case lexer.ADD_I:
+	case parser.ADD_I:
 		return NewBinOp(p, ADD_I, readCount)
-	case lexer.SUB_I:
+	case parser.SUB_I:
 		return NewBinOp(p, SUB_I, readCount)
-	case lexer.MULT_I:
+	case parser.MULT_I:
 		return NewBinOp(p, MULT_I, readCount)
-	case lexer.DIV_I:
+	case parser.DIV_I:
 		return NewBinOp(p, DIV_I, readCount)
-	case lexer.MOD_I:
+	case parser.MOD_I:
 		return NewBinOp(p, MOD_I, readCount)
 	default:
 		return parseExit(p, readCount)

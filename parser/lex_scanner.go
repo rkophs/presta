@@ -1,4 +1,4 @@
-package lexer
+package parser
 
 import (
 	"bufio"
@@ -6,17 +6,17 @@ import (
 	"io"
 )
 
-type Scanner struct {
+type CharScanner struct {
 	r    *bufio.Reader
 	line int64
 	pos  int64
 }
 
-func NewScanner(r io.Reader) *Scanner {
-	return &Scanner{r: bufio.NewReader(r), line: 0, pos: 0}
+func NewCharScanner(r io.Reader) *CharScanner {
+	return &CharScanner{r: bufio.NewReader(r), line: 0, pos: 0}
 }
 
-func (s *Scanner) Scan() *Token {
+func (s *CharScanner) Scan() *Token {
 
 	if ch, _, _ := s.peek(); isWhitespace(ch) {
 		s.discardWhitespace()
@@ -53,7 +53,7 @@ func (s *Scanner) Scan() *Token {
 	return &Token{tok: tok, lit: lit, line: l, pos: p}
 }
 
-func (s *Scanner) scanOperation() *Token {
+func (s *CharScanner) scanOperation() *Token {
 	var buf bytes.Buffer
 	ch, l, p := s.read()
 	buf.WriteRune(ch)
@@ -101,7 +101,7 @@ func (s *Scanner) scanOperation() *Token {
 	return &Token{tok: tok, lit: lit, line: l, pos: p}
 }
 
-func (s *Scanner) handleTwoOptions(cmp rune, yes Tok, no Tok, buf bytes.Buffer) (tok Tok, lit string) {
+func (s *CharScanner) handleTwoOptions(cmp rune, yes Tok, no Tok, buf bytes.Buffer) (tok Tok, lit string) {
 	if ch, _, _ := s.peek(); ch == cmp {
 		s.read()
 		buf.WriteRune(ch)
@@ -111,7 +111,7 @@ func (s *Scanner) handleTwoOptions(cmp rune, yes Tok, no Tok, buf bytes.Buffer) 
 	}
 }
 
-func (s *Scanner) handleThreeOptions(ifCmp rune, elifCmp rune, a Tok, b Tok, c Tok, buf bytes.Buffer) (tok Tok, lit string) {
+func (s *CharScanner) handleThreeOptions(ifCmp rune, elifCmp rune, a Tok, b Tok, c Tok, buf bytes.Buffer) (tok Tok, lit string) {
 	if ch, _, _ := s.peek(); ch == ifCmp {
 		s.read()
 		buf.WriteRune(ch)
@@ -125,7 +125,7 @@ func (s *Scanner) handleThreeOptions(ifCmp rune, elifCmp rune, a Tok, b Tok, c T
 	}
 }
 
-func (s *Scanner) scanNumber() *Token {
+func (s *CharScanner) scanNumber() *Token {
 
 	var buf bytes.Buffer
 	ch, l, p := s.read()
@@ -155,7 +155,7 @@ func (s *Scanner) scanNumber() *Token {
 	return &Token{tok: NUMBER, lit: buf.String(), line: l, pos: p}
 }
 
-func (s *Scanner) scanStringLiteral() *Token {
+func (s *CharScanner) scanStringLiteral() *Token {
 	var buf bytes.Buffer
 	_, l, p := s.read() //throw away string opener
 
@@ -168,7 +168,7 @@ func (s *Scanner) scanStringLiteral() *Token {
 	}
 }
 
-func (s *Scanner) scanIdent() *Token {
+func (s *CharScanner) scanIdent() *Token {
 	var buf bytes.Buffer
 	ch, l, p := s.read()
 	buf.WriteRune(ch)
@@ -185,7 +185,7 @@ func (s *Scanner) scanIdent() *Token {
 	return &Token{tok: IDENTIFIER, lit: buf.String(), line: l, pos: p}
 }
 
-func (s *Scanner) discardWhitespace() {
+func (s *CharScanner) discardWhitespace() {
 	for {
 		if ch, _, _ := s.peek(); ch == eof || !isWhitespace(ch) {
 			break
@@ -194,7 +194,7 @@ func (s *Scanner) discardWhitespace() {
 	}
 }
 
-func (s *Scanner) peek() (rune, int64, int64) {
+func (s *CharScanner) peek() (rune, int64, int64) {
 	ch, _, err := s.r.ReadRune()
 	_ = s.r.UnreadRune()
 	if err != nil {
@@ -207,7 +207,7 @@ func (s *Scanner) peek() (rune, int64, int64) {
 	}
 }
 
-func (s *Scanner) read() (rune, int64, int64) {
+func (s *CharScanner) read() (rune, int64, int64) {
 	ch, _, err := s.r.ReadRune()
 	if err != nil {
 		return eof, -1, -1
