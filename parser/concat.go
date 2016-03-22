@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bytes"
+	"github.com/rkophs/presta/err"
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/json"
 	"github.com/rkophs/presta/lexer"
@@ -12,7 +13,7 @@ type Concat struct {
 	components []AstNode
 }
 
-func NewConcatExpr(p *Parser) (tree AstNode, err Error) {
+func NewConcatExpr(p *Parser) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	/* Get '.' */
@@ -34,8 +35,8 @@ func NewConcatExpr(p *Parser) (tree AstNode, err Error) {
 	/*Get List*/
 	exprs := []AstNode{}
 	for {
-		if expr, err := NewExpression(p); err != nil {
-			return p.parseError(err.Message(), readCount)
+		if expr, e := NewExpression(p); e != nil {
+			return p.parseError(e.Message(), readCount)
 		} else if expr != nil {
 			exprs = append(exprs, expr)
 		} else {
@@ -77,6 +78,6 @@ func (c *Concat) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("CONCAT")})
 }
 
-func (c *Concat) GenerateICG(code *icg.Code, s *semantic.Semantic) Error {
+func (c *Concat) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
 	return nil
 }

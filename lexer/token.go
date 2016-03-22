@@ -69,3 +69,11 @@ func (t *Token) Type() Tok {
 func (t *Token) Lit() string {
 	return t.lit
 }
+
+func (t *Token) Line() int64 {
+	return t.line
+}
+
+func (t *Token) Pos() int64 {
+	return t.pos
+}

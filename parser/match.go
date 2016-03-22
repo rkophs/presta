@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bytes"
+	"github.com/rkophs/presta/err"
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/json"
 	"github.com/rkophs/presta/lexer"
@@ -14,7 +15,7 @@ type Match struct {
 	matchType  MatchType
 }
 
-func NewMatchExpr(p *Parser) (tree AstNode, err Error) {
+func NewMatchExpr(p *Parser) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	/*Get '@' or '|' */
@@ -60,22 +61,22 @@ func NewMatchExpr(p *Parser) (tree AstNode, err Error) {
 	return p.parseValid(node)
 }
 
-func branches(p *Parser) (c []AstNode, b []AstNode, err Error) {
+func branches(p *Parser) (c []AstNode, b []AstNode, e err.Error) {
 	conds := []AstNode{}
 	branches := []AstNode{}
 	for {
-		if cond, err := NewExpression(p); err != nil {
-			return conds, branches, err
+		if cond, e := NewExpression(p); e != nil {
+			return conds, branches, e
 		} else if cond != nil {
 			conds = append(conds, cond)
 		} else {
 			break
 		}
 
-		if branch, err := NewExpression(p); err != nil {
-			return conds, branches, err
+		if branch, e := NewExpression(p); e != nil {
+			return conds, branches, e
 		} else if branch == nil {
-			return conds, branches, NewSyntaxError("Match expression missing branch")
+			return conds, branches, err.NewSyntaxError("Match expression missing branch")
 		} else {
 			branches = append(branches, branch)
 		}
@@ -106,6 +107,6 @@ func (m *Match) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("MATCH")})
 }
 
-func (m *Match) GenerateICG(code *icg.Code, s *semantic.Semantic) Error {
+func (m *Match) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
 	return nil
 }

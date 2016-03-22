@@ -1,9 +1,5 @@
 package semantic
 
-import (
-	"fmt"
-)
-
 type Semantic struct {
 	fns   map[string]*fnTuple
 	vars  []*scope
@@ -24,7 +20,7 @@ func NewSemantic() *Semantic {
 	return &Semantic{fns: make(map[string]*fnTuple), vars: make([]*scope, 0), ids: 0, scope: 0}
 }
 
-func newFnTupe(arity, id int) *fnTuple {
+func newFnType(arity, id int) *fnTuple {
 	return &fnTuple{arity: arity, id: id}
 }
 
@@ -38,7 +34,7 @@ func (s *Semantic) nextId() int {
 }
 
 func (s *Semantic) AddFunction(name string, arity int) {
-	s.fns[name] = newFnTupe(arity, s.nextId())
+	s.fns[name] = newFnType(arity, s.nextId())
 }
 
 func (s *Semantic) FunctionExists(name string) bool {
@@ -69,7 +65,6 @@ func (s *Semantic) PopScope() {
 
 func (s *Semantic) VariableExists(name string) bool {
 	for _, scope := range s.vars {
-		fmt.Println("Scope it")
 		if _, ok := scope.vars[name]; ok {
 			return true
 		}

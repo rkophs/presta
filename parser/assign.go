@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bytes"
+	"github.com/rkophs/presta/err"
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/json"
 	"github.com/rkophs/presta/lexer"
@@ -13,7 +14,7 @@ type Assign struct {
 	value AstNode
 }
 
-func NewAssignExpr(p *Parser) (tree AstNode, err Error) {
+func NewAssignExpr(p *Parser) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	/*Check for : */
@@ -58,6 +59,6 @@ func (a *Assign) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("ASSIGN")})
 }
 
-func (p *Assign) GenerateICG(code *icg.Code, s *semantic.Semantic) Error {
+func (p *Assign) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
 	return nil
 }

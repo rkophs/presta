@@ -1,8 +1,8 @@
 package parser
 
 import (
+	"github.com/rkophs/presta/err"
 	"github.com/rkophs/presta/lexer"
-	// "strconv"
 )
 
 type Parser struct {
@@ -14,28 +14,26 @@ func NewParser(tokens []lexer.Token) *Parser {
 	return &Parser{tokens: tokens, at: 0}
 }
 
-func (p *Parser) Scan() (tree AstNode, err Error) {
-	if tree, err := NewProgram(p); err != nil {
-		return nil, err
-	} else if tree == nil {
-		return p.parseError("No program available.", 0)
+func (p *Parser) Scan() (tree AstNode, e err.Error) {
+	if tree, e := NewProgram(p); e != nil {
+		return nil, e
 	} else {
 		return p.parseValid(tree)
 	}
 }
 
-func (p *Parser) parseExit(readCount int) (tree AstNode, err Error) {
+func (p *Parser) parseExit(readCount int) (tree AstNode, e err.Error) {
 	p.rollBack(readCount)
 	return nil, nil
 }
 
-func (p *Parser) parseValid(node AstNode) (tree AstNode, err Error) {
+func (p *Parser) parseValid(node AstNode) (tree AstNode, e err.Error) {
 	return node, nil
 }
 
-func (p *Parser) parseError(msg string, readCount int) (tree AstNode, err Error) {
+func (p *Parser) parseError(msg string, readCount int) (tree AstNode, e err.Error) {
 	p.rollBack(readCount)
-	return nil, NewSyntaxError(msg)
+	return nil, err.NewSyntaxError(msg)
 }
 
 func (p *Parser) rollBack(amount int) {

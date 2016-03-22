@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bytes"
+	"github.com/rkophs/presta/err"
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
@@ -16,7 +17,7 @@ type Function struct {
 	exec   AstNode
 }
 
-func NewFunction(p *Parser) (tree AstNode, err Error) {
+func NewFunction(p *Parser) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	/*Check if it starts with '~' */
@@ -106,7 +107,7 @@ func (f *Function) Type() AstNodeType {
 	return FUNC
 }
 
-func (f *Function) GenerateICG(code *icg.Code, s *semantic.Semantic) Error {
+func (f *Function) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
 
 	//Instantiate stack accessors for each param
 	s.PushNewScope(f.params)
@@ -115,8 +116,8 @@ func (f *Function) GenerateICG(code *icg.Code, s *semantic.Semantic) Error {
 	}
 
 	//Code generate the body
-	if err := f.exec.GenerateICG(code, s); err != nil {
-		return err
+	if e := f.exec.GenerateICG(code, s); e != nil {
+		return e
 	}
 
 	//Load result into AX and shrink the stack

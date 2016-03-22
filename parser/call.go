@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bytes"
+	"github.com/rkophs/presta/err"
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
@@ -31,7 +32,7 @@ func (c *Call) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("CALL")})
 }
 
-func NewCallExpr(p *Parser) (tree AstNode, err Error) {
+func NewCallExpr(p *Parser) (tree AstNode, e err.Error) {
 
 	readCount := 0
 
@@ -57,8 +58,8 @@ func NewCallExpr(p *Parser) (tree AstNode, err Error) {
 	/* Check for arguments */
 	args := []AstNode{}
 	for {
-		if expr, err := NewExpression(p); err != nil {
-			return p.parseError(err.Message(), readCount)
+		if expr, e := NewExpression(p); e != nil {
+			return p.parseError(e.Message(), readCount)
 		} else if expr != nil {
 			args = append(args, expr)
 		} else {
@@ -78,17 +79,17 @@ func NewCallExpr(p *Parser) (tree AstNode, err Error) {
 	return p.parseValid(node)
 }
 
-func (c *Call) GenerateICG(code *icg.Code, s *semantic.Semantic) Error {
+func (c *Call) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
 
 	if !s.FunctionExists(c.name) || s.FunctionArity(c.name) != len(c.params) {
-		return NewSymanticError("Function not found")
+		return err.NewSymanticError("Function not found")
 	}
 
 	//Generate params
 	offsets := make([]int, len(c.params))
 	for i, p := range c.params {
-		if err := p.GenerateICG(code, s); err != nil {
-			return err
+		if e := p.GenerateICG(code, s); e != nil {
+			return e
 		} else {
 			offsets[i] = code.GetFrameOffset()
 			code.Append(ir.NewPush(code.Ax))

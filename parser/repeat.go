@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bytes"
+	"github.com/rkophs/presta/err"
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/json"
 	"github.com/rkophs/presta/lexer"
@@ -13,7 +14,7 @@ type Repeat struct {
 	exec      AstNode
 }
 
-func NewRepeatExpr(p *Parser) (tree AstNode, err Error) {
+func NewRepeatExpr(p *Parser) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	/*Check for ^ */
@@ -26,8 +27,8 @@ func NewRepeatExpr(p *Parser) (tree AstNode, err Error) {
 
 	/*Get expression*/
 	var condition AstNode
-	if expr, err := NewExpression(p); err != nil {
-		return p.parseError(err.Message(), readCount)
+	if expr, e := NewExpression(p); e != nil {
+		return p.parseError(e.Message(), readCount)
 	} else if expr != nil {
 		condition = expr
 	} else {
@@ -35,8 +36,8 @@ func NewRepeatExpr(p *Parser) (tree AstNode, err Error) {
 	}
 
 	/*Get expression*/
-	if expr, err := NewExpression(p); err != nil {
-		return p.parseError(err.Message(), readCount)
+	if expr, e := NewExpression(p); e != nil {
+		return p.parseError(e.Message(), readCount)
 	} else if expr != nil {
 		node := &Repeat{condition: condition, exec: expr}
 		return p.parseValid(node)
@@ -57,6 +58,6 @@ func (r *Repeat) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("REPEAT")})
 }
 
-func (r *Repeat) GenerateICG(code *icg.Code, s *semantic.Semantic) Error {
+func (r *Repeat) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
 	return nil
 }

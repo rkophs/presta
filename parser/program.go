@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bytes"
+	"github.com/rkophs/presta/err"
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
@@ -17,14 +18,14 @@ func (p *Program) Type() AstNodeType {
 	return PROG
 }
 
-func NewProgram(p *Parser) (tree AstNode, err Error) {
+func NewProgram(p *Parser) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	/*Check for function declarations*/
 	functions := []*Function{}
 	for {
-		if function, err := NewFunction(p); err != nil {
-			return p.parseError(err.Message(), readCount)
+		if function, e := NewFunction(p); e != nil {
+			return p.parseError(e.Message(), readCount)
 		} else if function != nil {
 			functions = append(functions, function.(*Function))
 		} else {
@@ -35,7 +36,7 @@ func NewProgram(p *Parser) (tree AstNode, err Error) {
 	/*Check for exec*/
 	expr, err := NewExpression(p)
 	if err != nil {
-		return p.parseError(err.Message(), readCount)
+		return p.parseError(e.Message(), readCount)
 	} else if expr == nil {
 		return p.parseError("Program must contain an executable expression", readCount)
 	}
@@ -57,7 +58,7 @@ func (p *Program) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("PROG")})
 }
 
-func (p *Program) GenerateICG(code *icg.Code, s *semantic.Semantic) Error {
+func (p *Program) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
 
 	/* Add function linker symbols */
 	for _, f := range p.funcs {
@@ -65,8 +66,8 @@ func (p *Program) GenerateICG(code *icg.Code, s *semantic.Semantic) Error {
 		code.SetFunctionOffset(f.name, ir.NewInstructionLocation(-1))
 	}
 
-	if err := p.exec.GenerateICG(code, s); err != nil {
-		return err
+	if e := p.exec.GenerateICG(code, s); e != nil {
+		return e
 	}
 
 	//Return result & shrink stack
@@ -77,8 +78,8 @@ func (p *Program) GenerateICG(code *icg.Code, s *semantic.Semantic) Error {
 	for _, f := range p.funcs {
 		code.GetFunctionOffset(f.name).SetLocation(offset)
 		fnBlock := icg.NewCode()
-		if err := f.GenerateICG(fnBlock, s); err != nil {
-			return err
+		if e := f.GenerateICG(fnBlock, s); e != nil {
+			return e
 		}
 		code.AppendBlock(fnBlock)
 		offset += fnBlock.GetCount()

@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bytes"
+	"github.com/rkophs/presta/err"
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/json"
 	"github.com/rkophs/presta/lexer"
@@ -14,7 +15,7 @@ type Let struct {
 	exec   AstNode
 }
 
-func NewLetExpr(p *Parser) (tree AstNode, err Error) {
+func NewLetExpr(p *Parser) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	/*Check if it starts with ':' */
@@ -60,8 +61,8 @@ func NewLetExpr(p *Parser) (tree AstNode, err Error) {
 	/* Check for assignments */
 	values := []AstNode{}
 	for {
-		if node, err := NewExpression(p); err != nil {
-			return p.parseError(err.Message(), readCount)
+		if node, e := NewExpression(p); e != nil {
+			return p.parseError(e.Message(), readCount)
 		} else if node != nil {
 			values = append(values, node)
 		} else {
@@ -115,6 +116,6 @@ func (l *Let) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("LET")})
 }
 
-func (l *Let) GenerateICG(code *icg.Code, s *semantic.Semantic) Error {
+func (l *Let) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
 	return nil
 }

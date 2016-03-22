@@ -3,6 +3,7 @@ package parser
 import (
 	"bytes"
 	"encoding/hex"
+	"github.com/rkophs/presta/err"
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
@@ -17,22 +18,22 @@ type Data struct {
 	dataType DataType
 }
 
-func NewData(p *Parser) (tree AstNode, err Error) {
+func NewData(p *Parser) (tree AstNode, e err.Error) {
 	readCount := 1
-	if tok, err := p.read(); err {
+	if tok, e := p.read(); e {
 		return p.parseError("Premature end.", readCount)
 	} else if tok.Type() == lexer.STRING {
 		node := &Data{str: tok.Lit(), dataType: STRING}
 		return p.parseValid(node)
 	} else if tok.Type() == lexer.NUMBER {
-		if num, err := strconv.ParseFloat(tok.Lit(), 64); err != nil {
+		if num, e := strconv.ParseFloat(tok.Lit(), 64); e != nil {
 			return p.parseError("Error parsing numeric.", readCount)
 		} else {
 			node := &Data{num: num, dataType: NUMBER}
 			return p.parseValid(node)
 		}
 	} else if tok.Type() == lexer.IDENTIFIER {
-		if next, err := p.peek(); err {
+		if next, e := p.peek(); e {
 			return p.parseError("Premature end.", readCount)
 		} else if next.Type() == lexer.CURLY_OPEN { //Not identifer - but caller
 			p.parseExit(readCount)
@@ -65,7 +66,7 @@ func (d *Data) Serialize(buffer *bytes.Buffer) {
 	}
 }
 
-func (d *Data) GenerateICG(code *icg.Code, s *semantic.Semantic) Error {
+func (d *Data) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
 
 	var entry ir.StackEntry
 	switch d.dataType {

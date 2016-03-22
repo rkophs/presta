@@ -1,10 +1,11 @@
 package parser
 
 import (
+	"github.com/rkophs/presta/err"
 	"github.com/rkophs/presta/lexer"
 )
 
-func NewExpression(p *Parser) (tree AstNode, err Error) {
+func NewExpression(p *Parser) (tree AstNode, e err.Error) {
 
 	readCount := 0
 	parens := false
@@ -18,26 +19,26 @@ func NewExpression(p *Parser) (tree AstNode, err Error) {
 		parens = true
 	}
 
-	if node, err := NewLetExpr(p); err != nil {
-		return p.parseError(err.Message(), readCount)
+	if node, e := NewLetExpr(p); e != nil {
+		return p.parseError(e.Message(), readCount)
 	} else if node != nil {
 		return validExprEnding(p, node, parens, readCount)
 	}
 
-	if node, err := parseUnaryExpression(p); err != nil {
-		return p.parseError(err.Message(), readCount)
+	if node, e := parseUnaryExpression(p); e != nil {
+		return p.parseError(e.Message(), readCount)
 	} else if node != nil {
 		return validExprEnding(p, node, parens, readCount)
 	}
 
-	if node, err := parseBinaryExpression(p); err != nil {
-		return p.parseError(err.Message(), readCount)
+	if node, e := parseBinaryExpression(p); e != nil {
+		return p.parseError(e.Message(), readCount)
 	} else if node != nil {
 		return validExprEnding(p, node, parens, readCount)
 	}
 
-	if node, err := NewData(p); err != nil {
-		return p.parseError(err.Message(), readCount)
+	if node, e := NewData(p); e != nil {
+		return p.parseError(e.Message(), readCount)
 	} else if node != nil {
 		return validExprEnding(p, node, parens, readCount)
 	}
@@ -45,23 +46,23 @@ func NewExpression(p *Parser) (tree AstNode, err Error) {
 	return p.parseExit(readCount)
 }
 
-func validExprEnding(p *Parser, node AstNode, hasOpening bool, readCount int) (tree AstNode, err Error) {
+func validExprEnding(p *Parser, node AstNode, hasOpening bool, readCount int) (tree AstNode, e err.Error) {
 	if !hasOpening {
 		return p.parseValid(node)
 	}
 
-	if yes, err := closeParen(p); err != nil {
-		return p.parseError(err.Message(), readCount)
+	if yes, e := closeParen(p); e != nil {
+		return p.parseError(e.Message(), readCount)
 	} else if !yes {
 		return p.parseError("Missing closing parenthesis for expression", readCount)
 	} else {
-		return node, err
+		return node, e
 	}
 }
 
-func closeParen(p *Parser) (yes bool, err Error) {
+func closeParen(p *Parser) (yes bool, e err.Error) {
 	if tok, eof := p.peek(); eof {
-		return false, NewSyntaxError("Premature end.")
+		return false, err.NewSyntaxError("Premature end.")
 	} else if tok.Type() != lexer.PAREN_CLOSE {
 		return false, nil
 	} else {
@@ -70,36 +71,36 @@ func closeParen(p *Parser) (yes bool, err Error) {
 	}
 }
 
-func parseUnaryExpression(p *Parser) (tree AstNode, err Error) {
+func parseUnaryExpression(p *Parser) (tree AstNode, e err.Error) {
 
 	readCount := 0
 
-	if node, err := NewMatchExpr(p); err != nil {
-		return p.parseError(err.Message(), readCount)
+	if node, e := NewMatchExpr(p); e != nil {
+		return p.parseError(e.Message(), readCount)
 	} else if node != nil {
 		return p.parseValid(node)
 	}
 
-	if node, err := NewConcatExpr(p); err != nil {
-		return p.parseError(err.Message(), readCount)
+	if node, e := NewConcatExpr(p); e != nil {
+		return p.parseError(e.Message(), readCount)
 	} else if node != nil {
 		return p.parseValid(node)
 	}
 
-	if node, err := NewCallExpr(p); err != nil {
-		return p.parseError(err.Message(), readCount)
+	if node, e := NewCallExpr(p); e != nil {
+		return p.parseError(e.Message(), readCount)
 	} else if node != nil {
 		return p.parseValid(node)
 	}
 
-	if node, err := NewNotExpr(p); err != nil {
-		return p.parseError(err.Message(), readCount)
+	if node, e := NewNotExpr(p); e != nil {
+		return p.parseError(e.Message(), readCount)
 	} else if node != nil {
 		return p.parseValid(node)
 	}
 
-	if node, err := parseIncrExpression(p); err != nil {
-		return p.parseError(err.Message(), readCount)
+	if node, e := parseIncrExpression(p); e != nil {
+		return p.parseError(e.Message(), readCount)
 	} else if node != nil {
 		return p.parseValid(node)
 	}
@@ -107,7 +108,7 @@ func parseUnaryExpression(p *Parser) (tree AstNode, err Error) {
 	return p.parseExit(readCount)
 }
 
-func parseIncrExpression(p *Parser) (tree AstNode, err Error) {
+func parseIncrExpression(p *Parser) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	/* Get op type */
@@ -141,17 +142,17 @@ func parseIncrExpression(p *Parser) (tree AstNode, err Error) {
 	return p.parseValid(node)
 }
 
-func parseBinaryExpression(p *Parser) (tree AstNode, err Error) {
+func parseBinaryExpression(p *Parser) (tree AstNode, e err.Error) {
 	readCount := 0
 
-	if node, err := NewAssignExpr(p); err != nil {
-		return p.parseError(err.Message(), readCount)
+	if node, e := NewAssignExpr(p); e != nil {
+		return p.parseError(e.Message(), readCount)
 	} else if node != nil {
 		return p.parseValid(node)
 	}
 
-	if node, err := NewRepeatExpr(p); err != nil {
-		return p.parseError(err.Message(), readCount)
+	if node, e := NewRepeatExpr(p); e != nil {
+		return p.parseError(e.Message(), readCount)
 	} else if node != nil {
 		return p.parseValid(node)
 	}

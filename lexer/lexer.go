@@ -3,7 +3,6 @@ package lexer
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"io"
 )
 
@@ -11,23 +10,6 @@ type Scanner struct {
 	r    *bufio.Reader
 	line int64
 	pos  int64
-}
-
-func Tokenize(reader io.Reader) (tokens []Token, err bool, msg string) {
-	s := NewScanner(reader)
-	a := []Token{}
-	for {
-		tok := s.Scan()
-		if tok.tok == EOF {
-			break
-		} else if tok.tok == ILLEGAL {
-			return nil, true, fmt.Sprintf("[%d:%d]\tIllegal token:\t%q\n", tok.line, tok.pos, tok.lit)
-		} else {
-			a = append(a, *tok)
-		}
-	}
-
-	return a, false, ""
 }
 
 func NewScanner(r io.Reader) *Scanner {

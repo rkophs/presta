@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bytes"
+	"github.com/rkophs/presta/err"
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/json"
 	"github.com/rkophs/presta/lexer"
@@ -12,7 +13,7 @@ type Not struct {
 	exec AstNode
 }
 
-func NewNotExpr(p *Parser) (tree AstNode, err Error) {
+func NewNotExpr(p *Parser) (tree AstNode, e err.Error) {
 	readCount := 0
 	/*Check for ! */
 	readCount++
@@ -22,8 +23,8 @@ func NewNotExpr(p *Parser) (tree AstNode, err Error) {
 		return p.parseExit(readCount) //Not caller, but data identifier
 	}
 
-	if expr, err := NewExpression(p); err != nil {
-		return p.parseError(err.Message(), readCount)
+	if expr, e := NewExpression(p); e != nil {
+		return p.parseError(e.Message(), readCount)
 	} else if expr != nil {
 		node := &Not{exec: expr}
 		return p.parseValid(node)
@@ -44,6 +45,6 @@ func (n *Not) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("NOT")})
 }
 
-func (n *Not) GenerateICG(code *icg.Code, s *semantic.Semantic) Error {
+func (n *Not) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
 	return nil
 }
