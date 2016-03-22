@@ -13,7 +13,7 @@ type Not struct {
 	exec AstNode
 }
 
-func NewNotExpr(p *parser.Parser) (tree AstNode, e err.Error) {
+func NewNotExpr(p *parser.TokenScanner) (tree AstNode, e err.Error) {
 	readCount := 0
 	/*Check for ! */
 	readCount++

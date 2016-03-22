@@ -19,7 +19,7 @@ func (p *Program) Type() AstNodeType {
 	return PROG
 }
 
-func NewProgram(p *parser.Parser) (tree AstNode, e err.Error) {
+func NewProgram(p *parser.TokenScanner) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	/*Check for function declarations*/

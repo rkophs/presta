@@ -16,7 +16,7 @@ type BinOp struct {
 	op BinOpType
 }
 
-func NewBinOp(p *parser.Parser, op BinOpType, readCount int) (tree AstNode, e err.Error) {
+func NewBinOp(p *parser.TokenScanner, op BinOpType, readCount int) (tree AstNode, e err.Error) {
 	if l, e := NewExpression(p); e != nil {
 		return parseError(p, e.Message(), readCount)
 	} else if l != nil {

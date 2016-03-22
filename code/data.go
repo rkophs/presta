@@ -18,7 +18,7 @@ type Data struct {
 	dataType DataType
 }
 
-func NewData(p *parser.Parser) (tree AstNode, e err.Error) {
+func NewData(p *parser.TokenScanner) (tree AstNode, e err.Error) {
 	readCount := 1
 	if tok, e := p.Read(); e {
 		return parseError(p, "Premature end.", readCount)

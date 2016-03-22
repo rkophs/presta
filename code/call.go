@@ -15,7 +15,7 @@ type Call struct {
 	params []AstNode
 }
 
-func NewCallExpr(p *parser.Parser) (tree AstNode, e err.Error) {
+func NewCallExpr(p *parser.TokenScanner) (tree AstNode, e err.Error) {
 
 	readCount := 0
 

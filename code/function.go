@@ -17,7 +17,7 @@ type Function struct {
 	exec   AstNode
 }
 
-func NewFunction(p *parser.Parser) (tree AstNode, e err.Error) {
+func NewFunction(p *parser.TokenScanner) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	/*Check if it starts with '~' */

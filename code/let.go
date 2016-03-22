@@ -15,7 +15,7 @@ type Let struct {
 	exec   AstNode
 }
 
-func NewLetExpr(p *parser.Parser) (tree AstNode, e err.Error) {
+func NewLetExpr(p *parser.TokenScanner) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	/*Check if it starts with ':' */

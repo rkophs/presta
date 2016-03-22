@@ -14,7 +14,7 @@ type Repeat struct {
 	exec      AstNode
 }
 
-func NewRepeatExpr(p *parser.Parser) (tree AstNode, e err.Error) {
+func NewRepeatExpr(p *parser.TokenScanner) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	/*Check for ^ */

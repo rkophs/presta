@@ -178,16 +178,16 @@ func (d *DataType) Serialize(buffer *bytes.Buffer) {
 	json.NewString(d.String()).Serialize(buffer)
 }
 
-func parseExit(p *parser.Parser, readCount int) (tree AstNode, e err.Error) {
+func parseExit(p *parser.TokenScanner, readCount int) (tree AstNode, e err.Error) {
 	p.RollBack(readCount)
 	return nil, nil
 }
 
-func parseValid(p *parser.Parser, node AstNode) (tree AstNode, e err.Error) {
+func parseValid(p *parser.TokenScanner, node AstNode) (tree AstNode, e err.Error) {
 	return node, nil
 }
 
-func parseError(p *parser.Parser, msg string, readCount int) (tree AstNode, e err.Error) {
+func parseError(p *parser.TokenScanner, msg string, readCount int) (tree AstNode, e err.Error) {
 	p.RollBack(readCount)
 	return nil, err.NewSyntaxError(msg)
 }

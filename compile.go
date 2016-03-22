@@ -48,12 +48,12 @@ func Generate(tree code.AstNode) (*icg.Code, err.Error) {
 }
 
 func Parse(tokens []parser.Token) (tree code.AstNode, e err.Error) {
-	p := parser.NewParser(tokens)
+	p := parser.NewTokenScanner(tokens)
 	return code.NewProgram(p)
 }
 
 func Tokenize(reader io.Reader) (tokens []parser.Token, e err.Error) {
-	s := parser.NewCharScanner(reader)
+	s := parser.NewLexScanner(reader)
 	a := []parser.Token{}
 	for {
 		tok := s.Scan()

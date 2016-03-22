@@ -15,7 +15,7 @@ type Match struct {
 	matchType  MatchType
 }
 
-func NewMatchExpr(p *parser.Parser) (tree AstNode, e err.Error) {
+func NewMatchExpr(p *parser.TokenScanner) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	/*Get '@' or '|' */
@@ -61,7 +61,7 @@ func NewMatchExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	return parseValid(p, node)
 }
 
-func branches(p *parser.Parser) (c []AstNode, b []AstNode, e err.Error) {
+func branches(p *parser.TokenScanner) (c []AstNode, b []AstNode, e err.Error) {
 	conds := []AstNode{}
 	branches := []AstNode{}
 	for {

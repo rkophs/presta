@@ -5,7 +5,7 @@ import (
 	"github.com/rkophs/presta/parser"
 )
 
-func NewExpression(p *parser.Parser) (tree AstNode, e err.Error) {
+func NewExpression(p *parser.TokenScanner) (tree AstNode, e err.Error) {
 
 	readCount := 0
 	parens := false
@@ -46,7 +46,7 @@ func NewExpression(p *parser.Parser) (tree AstNode, e err.Error) {
 	return parseExit(p, readCount)
 }
 
-func validExprEnding(p *parser.Parser, node AstNode, hasOpening bool, readCount int) (tree AstNode, e err.Error) {
+func validExprEnding(p *parser.TokenScanner, node AstNode, hasOpening bool, readCount int) (tree AstNode, e err.Error) {
 	if !hasOpening {
 		return parseValid(p, node)
 	}
@@ -60,7 +60,7 @@ func validExprEnding(p *parser.Parser, node AstNode, hasOpening bool, readCount 
 	}
 }
 
-func closeParen(p *parser.Parser) (yes bool, e err.Error) {
+func closeParen(p *parser.TokenScanner) (yes bool, e err.Error) {
 	if tok, eof := p.Peek(); eof {
 		return false, err.NewSyntaxError("Premature end.")
 	} else if tok.Type() != parser.PAREN_CLOSE {
@@ -71,7 +71,7 @@ func closeParen(p *parser.Parser) (yes bool, e err.Error) {
 	}
 }
 
-func parseUnaryExpression(p *parser.Parser) (tree AstNode, e err.Error) {
+func parseUnaryExpression(p *parser.TokenScanner) (tree AstNode, e err.Error) {
 
 	readCount := 0
 
@@ -108,7 +108,7 @@ func parseUnaryExpression(p *parser.Parser) (tree AstNode, e err.Error) {
 	return parseExit(p, readCount)
 }
 
-func parseIncrExpression(p *parser.Parser) (tree AstNode, e err.Error) {
+func parseIncrExpression(p *parser.TokenScanner) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	/* Get op type */
@@ -142,7 +142,7 @@ func parseIncrExpression(p *parser.Parser) (tree AstNode, e err.Error) {
 	return parseValid(p, node)
 }
 
-func parseBinaryExpression(p *parser.Parser) (tree AstNode, e err.Error) {
+func parseBinaryExpression(p *parser.TokenScanner) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	if node, e := NewAssignExpr(p); e != nil {

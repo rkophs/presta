@@ -13,7 +13,7 @@ type Concat struct {
 	components []AstNode
 }
 
-func NewConcatExpr(p *parser.Parser) (tree AstNode, e err.Error) {
+func NewConcatExpr(p *parser.TokenScanner) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	/* Get '.' */
