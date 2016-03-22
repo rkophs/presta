@@ -6,7 +6,6 @@ import (
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/json"
 	"github.com/rkophs/presta/parser"
-	"github.com/rkophs/presta/semantic"
 )
 
 type Assign struct {
@@ -59,6 +58,6 @@ func (a *Assign) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("ASSIGN")})
 }
 
-func (p *Assign) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
+func (p *Assign) GenerateICG(code *icg.Code, s *parser.Semantic) err.Error {
 	return nil
 }

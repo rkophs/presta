@@ -7,7 +7,6 @@ import (
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
 	"github.com/rkophs/presta/parser"
-	"github.com/rkophs/presta/semantic"
 )
 
 type BinOp struct {
@@ -46,7 +45,7 @@ func (b *BinOp) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("BINOP")})
 }
 
-func (b *BinOp) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
+func (b *BinOp) GenerateICG(code *icg.Code, s *parser.Semantic) err.Error {
 
 	/*Compute left side and push onto stack*/
 	if e := b.l.GenerateICG(code, s); e != nil {

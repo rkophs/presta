@@ -6,7 +6,7 @@ import (
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
-	"github.com/rkophs/presta/semantic"
+	"github.com/rkophs/presta/parser"
 )
 
 type Variable struct {
@@ -24,7 +24,7 @@ func (v *Variable) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("VAR")})
 }
 
-func (v *Variable) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
+func (v *Variable) GenerateICG(code *icg.Code, s *parser.Semantic) err.Error {
 	if !s.VariableExists(v.name) {
 		return err.NewSymanticError("Undefined variable.")
 	}

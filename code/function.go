@@ -7,7 +7,6 @@ import (
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
 	"github.com/rkophs/presta/parser"
-	"github.com/rkophs/presta/semantic"
 )
 
 type Function struct {
@@ -107,7 +106,7 @@ func (f *Function) Type() AstNodeType {
 	return FUNC
 }
 
-func (f *Function) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
+func (f *Function) GenerateICG(code *icg.Code, s *parser.Semantic) err.Error {
 
 	//Instantiate stack accessors for each param
 	s.PushNewScope(f.params)

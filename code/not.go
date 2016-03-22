@@ -6,7 +6,6 @@ import (
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/json"
 	"github.com/rkophs/presta/parser"
-	"github.com/rkophs/presta/semantic"
 )
 
 type Not struct {
@@ -45,6 +44,6 @@ func (n *Not) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("NOT")})
 }
 
-func (n *Not) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
+func (n *Not) GenerateICG(code *icg.Code, s *parser.Semantic) err.Error {
 	return nil
 }

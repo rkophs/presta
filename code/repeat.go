@@ -6,7 +6,6 @@ import (
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/json"
 	"github.com/rkophs/presta/parser"
-	"github.com/rkophs/presta/semantic"
 )
 
 type Repeat struct {
@@ -58,6 +57,6 @@ func (r *Repeat) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("REPEAT")})
 }
 
-func (r *Repeat) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
+func (r *Repeat) GenerateICG(code *icg.Code, s *parser.Semantic) err.Error {
 	return nil
 }

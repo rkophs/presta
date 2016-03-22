@@ -7,7 +7,6 @@ import (
 	"github.com/rkophs/presta/err"
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/parser"
-	"github.com/rkophs/presta/semantic"
 	"io"
 )
 
@@ -40,7 +39,7 @@ func Compile(r io.Reader) err.Error {
 
 func Generate(tree code.AstNode) (*icg.Code, err.Error) {
 	code := icg.NewCode()
-	s := semantic.NewSemantic()
+	s := parser.NewSemantic()
 	if err := tree.GenerateICG(code, s); err != nil {
 		return nil, err
 	}

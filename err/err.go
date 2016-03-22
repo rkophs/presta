@@ -6,6 +6,7 @@ const (
 	LEXICAL_ERROR ErrorCode = iota
 	SYNTAX_ERROR
 	SEMANTIC_ERROR
+	RUNTIME_ERROR
 )
 
 type Error interface {
@@ -59,4 +60,20 @@ func (l *LexicalError) Message() string {
 
 func (l *LexicalError) Code() ErrorCode {
 	return LEXICAL_ERROR
+}
+
+type RuntimeError struct {
+	msg string
+}
+
+func NewRuntimeError(msg string) *RuntimeError {
+	return &RuntimeError{msg: msg}
+}
+
+func (r *RuntimeError) Message() string {
+	return r.msg
+}
+
+func (r *RuntimeError) Code() ErrorCode {
+	return RUNTIME_ERROR
 }

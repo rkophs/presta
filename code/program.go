@@ -7,7 +7,6 @@ import (
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
 	"github.com/rkophs/presta/parser"
-	"github.com/rkophs/presta/semantic"
 )
 
 type Program struct {
@@ -59,7 +58,7 @@ func (p *Program) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("PROG")})
 }
 
-func (p *Program) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
+func (p *Program) GenerateICG(code *icg.Code, s *parser.Semantic) err.Error {
 
 	/* Add function linker symbols */
 	for _, f := range p.funcs {

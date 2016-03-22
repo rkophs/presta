@@ -8,7 +8,7 @@ import (
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
 	"github.com/rkophs/presta/parser"
-	"github.com/rkophs/presta/semantic"
+	"github.com/rkophs/presta/system"
 	"strconv"
 )
 
@@ -66,15 +66,15 @@ func (d *Data) Serialize(buffer *bytes.Buffer) {
 	}
 }
 
-func (d *Data) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
+func (d *Data) GenerateICG(code *icg.Code, s *parser.Semantic) err.Error {
 
-	var entry ir.StackEntry
+	var entry system.StackEntry
 	switch d.dataType {
 	case STRING:
-		entry = ir.NewString(d.str)
+		entry = system.NewString(d.str)
 		break
 	case NUMBER:
-		entry = ir.NewNumber(d.num)
+		entry = system.NewNumber(d.num)
 		break
 	}
 

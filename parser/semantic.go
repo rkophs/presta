@@ -1,4 +1,4 @@
-package semantic
+package parser
 
 type Semantic struct {
 	fns   map[string]*fnTuple

@@ -2,6 +2,8 @@ package ir
 
 import (
 	"bytes"
+	"github.com/rkophs/presta/err"
+	"github.com/rkophs/presta/system"
 	"strconv"
 )
 
@@ -26,7 +28,7 @@ func (i *InstructionLocation) Serialize(buffer *bytes.Buffer) {
 	buffer.WriteString(strconv.FormatInt(int64(i.location), 16))
 }
 
-func mergeErrors(errs ...*Error) *Error {
+func mergeErrors(errs ...err.Error) err.Error {
 	for _, e := range errs {
 		if e != nil {
 			return e
@@ -50,7 +52,7 @@ func writeInstr(buffer *bytes.Buffer, instr string, params ...string) {
 
 type Instruction interface {
 	Serialize(buffer *bytes.Buffer)
-	Execute(*Stack) *Error
+	Execute(system.System) err.Error
 }
 
 type InstructionType byte
@@ -75,7 +77,7 @@ func NewAdd(l, r Accessor) *Add {
 	return &Add{l: l, r: r}
 }
 
-func (a *Add) Execute(s *Stack) *Error {
+func (a *Add) Execute(s system.System) err.Error {
 	l, el := a.l.ToValue(s)
 	lv, elv := l.ToNumber()
 	r, er := a.r.ToValue(s)
@@ -83,7 +85,7 @@ func (a *Add) Execute(s *Stack) *Error {
 	if err := mergeErrors(el, elv, er, erv); err != nil {
 		return err
 	}
-	return a.l.Assign(s, NewNumber(lv+rv))
+	return a.l.Assign(s, system.NewNumber(lv+rv))
 }
 
 func (a *Add) Serialize(buffer *bytes.Buffer) {
@@ -102,7 +104,7 @@ func NewPush(v Accessor) *Push {
 	return &Push{v: v}
 }
 
-func (p *Push) Execute(s *Stack) *Error {
+func (p *Push) Execute(s system.System) err.Error {
 	if v, e := p.v.ToValue(s); e != nil {
 		return e
 	} else {
@@ -120,7 +122,7 @@ type Release struct {
 	v *MemoryAccess
 }
 
-func (r *Release) Execute(s *Stack) *Error {
+func (r *Release) Execute(s system.System) err.Error {
 	return r.v.Release(s)
 }
 
@@ -134,7 +136,7 @@ type New struct {
 	v *MemoryAccess
 }
 
-func (n *New) Execute(s *Stack) *Error {
+func (n *New) Execute(s system.System) err.Error {
 	return n.v.New(s)
 }
 
@@ -148,7 +150,7 @@ type Pop struct {
 	v Accessor
 }
 
-func (p *Pop) Execute(s *Stack) *Error {
+func (p *Pop) Execute(s system.System) err.Error {
 	if entry, e := s.Pop(); e != nil {
 		return e
 	} else {
@@ -171,7 +173,7 @@ func NewMov(l Accessor, r Accessor) *Mov {
 	return &Mov{l: l, r: r}
 }
 
-func (m *Mov) Execute(s *Stack) *Error {
+func (m *Mov) Execute(s system.System) err.Error {
 	if v, e := m.r.ToValue(s); e != nil {
 		return e
 	} else {
@@ -195,7 +197,7 @@ func NewCall(location *InstructionLocation) *Call {
 	return &Call{location: location}
 }
 
-func (c *Call) Execute(s *Stack) *Error {
+func (c *Call) Execute(s system.System) err.Error {
 	return s.Goto(c.location.GetLocation())
 }
 
@@ -213,7 +215,7 @@ func NewResult(from Accessor) *Result {
 	return &Result{from: from}
 }
 
-func (r *Result) Execute(s *Stack) *Error {
+func (r *Result) Execute(s system.System) err.Error {
 	if from, e := r.from.ToValue(s); e != nil {
 		return e
 	} else {

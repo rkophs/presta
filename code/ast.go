@@ -6,13 +6,12 @@ import (
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/json"
 	"github.com/rkophs/presta/parser"
-	"github.com/rkophs/presta/semantic"
 )
 
 type AstNode interface {
 	json.Serializable
 	Type() AstNodeType
-	GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error
+	GenerateICG(code *icg.Code, s *parser.Semantic) err.Error
 }
 
 type AstNodeType int64

@@ -7,7 +7,6 @@ import (
 	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/json"
 	"github.com/rkophs/presta/parser"
-	"github.com/rkophs/presta/semantic"
 )
 
 type Call struct {
@@ -79,7 +78,7 @@ func (c *Call) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("CALL")})
 }
 
-func (c *Call) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
+func (c *Call) GenerateICG(code *icg.Code, s *parser.Semantic) err.Error {
 
 	if !s.FunctionExists(c.name) || s.FunctionArity(c.name) != len(c.params) {
 		return err.NewSymanticError("Function not found")
