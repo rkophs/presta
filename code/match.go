@@ -13,21 +13,21 @@ import (
 type Match struct {
 	conditions []AstNode
 	branches   []AstNode
-	matchType  parser.MatchType
+	matchType  MatchType
 }
 
 func NewMatchExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	/*Get '@' or '|' */
-	var matchType parser.MatchType
+	var matchType MatchType
 	readCount++
 	if tok, eof := p.Read(); eof {
 		return parseError(p, "Premature end.", readCount)
 	} else if tok.Type() == lexer.MATCH_ALL {
-		matchType = parser.ALL
+		matchType = ALL
 	} else if tok.Type() == lexer.MATCH_FIRST {
-		matchType = parser.FIRST
+		matchType = FIRST
 	} else {
 		return parseExit(p, readCount)
 	}
@@ -86,8 +86,8 @@ func branches(p *parser.Parser) (c []AstNode, b []AstNode, e err.Error) {
 	return conds, branches, nil
 }
 
-func (m *Match) Type() parser.AstNodeType {
-	return parser.MATCH
+func (m *Match) Type() AstNodeType {
+	return MATCH
 }
 
 func (m *Match) Serialize(buffer *bytes.Buffer) {

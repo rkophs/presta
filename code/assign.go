@@ -48,8 +48,8 @@ func NewAssignExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	}
 }
 
-func (a *Assign) Type() parser.AstNodeType {
-	return parser.ASSIGN
+func (a *Assign) Type() AstNodeType {
+	return ASSIGN
 }
 
 func (a *Assign) Serialize(buffer *bytes.Buffer) {

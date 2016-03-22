@@ -35,8 +35,8 @@ func NewNotExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 
 }
 
-func (n *Not) Type() parser.AstNodeType {
-	return parser.NOT
+func (n *Not) Type() AstNodeType {
+	return NOT
 }
 
 func (n *Not) Serialize(buffer *bytes.Buffer) {

@@ -47,8 +47,8 @@ func NewRepeatExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	}
 }
 
-func (r *Repeat) Type() parser.AstNodeType {
-	return parser.REPEAT
+func (r *Repeat) Type() AstNodeType {
+	return REPEAT
 }
 
 func (r *Repeat) Serialize(buffer *bytes.Buffer) {

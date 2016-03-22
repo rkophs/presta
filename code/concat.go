@@ -64,8 +64,8 @@ func NewConcatExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	return parseValid(p, node)
 }
 
-func (c *Concat) Type() parser.AstNodeType {
-	return parser.CONCAT
+func (c *Concat) Type() AstNodeType {
+	return CONCAT
 }
 
 func (c *Concat) Serialize(buffer *bytes.Buffer) {

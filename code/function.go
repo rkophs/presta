@@ -104,8 +104,8 @@ func (p *Function) Serialize(buffer *bytes.Buffer) {
 		&json.KV{K: "type", V: json.NewString("FUNC")})
 }
 
-func (f *Function) Type() parser.AstNodeType {
-	return parser.FUNC
+func (f *Function) Type() AstNodeType {
+	return FUNC
 }
 
 func (f *Function) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {

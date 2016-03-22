@@ -63,8 +63,8 @@ func NewCallExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	return parseValid(p, node)
 }
 
-func (c *Call) Type() parser.AstNodeType {
-	return parser.CALL
+func (c *Call) Type() AstNodeType {
+	return CALL
 }
 
 func (c *Call) Serialize(buffer *bytes.Buffer) {

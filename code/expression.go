@@ -113,15 +113,15 @@ func parseIncrExpression(p *parser.Parser) (tree AstNode, e err.Error) {
 	readCount := 0
 
 	/* Get op type */
-	var opType parser.BinOpType
+	var opType BinOpType
 	readCount++
 	tok, eof := p.Read()
 	if eof {
 		return parseError(p, "Premature end.", readCount)
 	} else if tok.Type() == lexer.INC {
-		opType = parser.ADD_I
+		opType = ADD_I
 	} else if tok.Type() == lexer.DEC {
-		opType = parser.SUB_I
+		opType = SUB_I
 	} else {
 		return parseExit(p, readCount)
 	}
@@ -138,7 +138,7 @@ func parseIncrExpression(p *parser.Parser) (tree AstNode, e err.Error) {
 		variable = &Variable{name: name}
 	}
 
-	one := &Data{dataType: parser.NUMBER, num: 1}
+	one := &Data{dataType: NUMBER, num: 1}
 	node := &BinOp{l: variable, r: one, op: opType}
 	return parseValid(p, node)
 }
@@ -165,41 +165,41 @@ func parseBinaryExpression(p *parser.Parser) (tree AstNode, e err.Error) {
 	}
 	switch tok.Type() {
 	case lexer.GT:
-		return NewBinOp(p, parser.GT, readCount)
+		return NewBinOp(p, GT, readCount)
 	case lexer.LT:
-		return NewBinOp(p, parser.LT, readCount)
+		return NewBinOp(p, LT, readCount)
 	case lexer.GTE:
-		return NewBinOp(p, parser.GTE, readCount)
+		return NewBinOp(p, GTE, readCount)
 	case lexer.LTE:
-		return NewBinOp(p, parser.LTE, readCount)
+		return NewBinOp(p, LTE, readCount)
 	case lexer.EQ:
-		return NewBinOp(p, parser.EQ, readCount)
+		return NewBinOp(p, EQ, readCount)
 	case lexer.NEQ:
-		return NewBinOp(p, parser.NEQ, readCount)
+		return NewBinOp(p, NEQ, readCount)
 	case lexer.OR:
-		return NewBinOp(p, parser.OR, readCount)
+		return NewBinOp(p, OR, readCount)
 	case lexer.AND:
-		return NewBinOp(p, parser.AND, readCount)
+		return NewBinOp(p, AND, readCount)
 	case lexer.ADD:
-		return NewBinOp(p, parser.ADD, readCount)
+		return NewBinOp(p, ADD, readCount)
 	case lexer.SUB:
-		return NewBinOp(p, parser.SUB, readCount)
+		return NewBinOp(p, SUB, readCount)
 	case lexer.MULT:
-		return NewBinOp(p, parser.MULT, readCount)
+		return NewBinOp(p, MULT, readCount)
 	case lexer.DIV:
-		return NewBinOp(p, parser.DIV, readCount)
+		return NewBinOp(p, DIV, readCount)
 	case lexer.MOD:
-		return NewBinOp(p, parser.MOD, readCount)
+		return NewBinOp(p, MOD, readCount)
 	case lexer.ADD_I:
-		return NewBinOp(p, parser.ADD_I, readCount)
+		return NewBinOp(p, ADD_I, readCount)
 	case lexer.SUB_I:
-		return NewBinOp(p, parser.SUB_I, readCount)
+		return NewBinOp(p, SUB_I, readCount)
 	case lexer.MULT_I:
-		return NewBinOp(p, parser.MULT_I, readCount)
+		return NewBinOp(p, MULT_I, readCount)
 	case lexer.DIV_I:
-		return NewBinOp(p, parser.DIV_I, readCount)
+		return NewBinOp(p, DIV_I, readCount)
 	case lexer.MOD_I:
-		return NewBinOp(p, parser.MOD_I, readCount)
+		return NewBinOp(p, MOD_I, readCount)
 	default:
 		return parseExit(p, readCount)
 	}

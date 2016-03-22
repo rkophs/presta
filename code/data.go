@@ -16,7 +16,7 @@ import (
 type Data struct {
 	str      string
 	num      float64
-	dataType parser.DataType
+	dataType DataType
 }
 
 func NewData(p *parser.Parser) (tree AstNode, e err.Error) {
@@ -24,13 +24,13 @@ func NewData(p *parser.Parser) (tree AstNode, e err.Error) {
 	if tok, e := p.Read(); e {
 		return parseError(p, "Premature end.", readCount)
 	} else if tok.Type() == lexer.STRING {
-		node := &Data{str: tok.Lit(), dataType: parser.STRING}
+		node := &Data{str: tok.Lit(), dataType: STRING}
 		return parseValid(p, node)
 	} else if tok.Type() == lexer.NUMBER {
 		if num, e := strconv.ParseFloat(tok.Lit(), 64); e != nil {
 			return parseError(p, "Error parsing numeric.", readCount)
 		} else {
-			node := &Data{num: num, dataType: parser.NUMBER}
+			node := &Data{num: num, dataType: NUMBER}
 			return parseValid(p, node)
 		}
 	} else if tok.Type() == lexer.IDENTIFIER {
@@ -47,12 +47,12 @@ func NewData(p *parser.Parser) (tree AstNode, e err.Error) {
 	return parseExit(p, readCount)
 }
 
-func (d *Data) Type() parser.AstNodeType {
-	return parser.DATA
+func (d *Data) Type() AstNodeType {
+	return DATA
 }
 
 func (d *Data) Serialize(buffer *bytes.Buffer) {
-	if d.dataType == parser.NUMBER {
+	if d.dataType == NUMBER {
 		json.BuildMap(buffer,
 			&json.KV{K: "dataType", V: json.NewString(d.dataType.String())},
 			&json.KV{K: "value", V: json.NewNumber(d.num)},
@@ -71,10 +71,10 @@ func (d *Data) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
 
 	var entry ir.StackEntry
 	switch d.dataType {
-	case parser.STRING:
+	case STRING:
 		entry = ir.NewString(d.str)
 		break
-	case parser.NUMBER:
+	case NUMBER:
 		entry = ir.NewNumber(d.num)
 		break
 	}

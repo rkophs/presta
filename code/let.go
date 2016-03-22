@@ -94,8 +94,8 @@ func NewLetExpr(p *parser.Parser) (tree AstNode, e err.Error) {
 	return parseValid(p, node)
 }
 
-func (l *Let) Type() parser.AstNodeType {
-	return parser.LET
+func (l *Let) Type() AstNodeType {
+	return LET
 }
 
 func (l *Let) Serialize(buffer *bytes.Buffer) {

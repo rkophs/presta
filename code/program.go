@@ -15,8 +15,8 @@ type Program struct {
 	exec  AstNode
 }
 
-func (p *Program) Type() parser.AstNodeType {
-	return parser.PROG
+func (p *Program) Type() AstNodeType {
+	return PROG
 }
 
 func NewProgram(p *parser.Parser) (tree AstNode, e err.Error) {

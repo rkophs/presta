@@ -13,10 +13,10 @@ import (
 type BinOp struct {
 	l  AstNode
 	r  AstNode
-	op parser.BinOpType
+	op BinOpType
 }
 
-func NewBinOp(p *parser.Parser, op parser.BinOpType, readCount int) (tree AstNode, e err.Error) {
+func NewBinOp(p *parser.Parser, op BinOpType, readCount int) (tree AstNode, e err.Error) {
 	if l, e := NewExpression(p); e != nil {
 		return parseError(p, e.Message(), readCount)
 	} else if l != nil {
@@ -33,8 +33,8 @@ func NewBinOp(p *parser.Parser, op parser.BinOpType, readCount int) (tree AstNod
 	}
 }
 
-func (b *BinOp) Type() parser.AstNodeType {
-	return parser.BIN_OP
+func (b *BinOp) Type() AstNodeType {
+	return BIN_OP
 }
 
 func (b *BinOp) Serialize(buffer *bytes.Buffer) {
@@ -65,7 +65,7 @@ func (b *BinOp) GenerateICG(code *icg.Code, s *semantic.Semantic) err.Error {
 	code.IncrFrameOffset(1)
 
 	switch b.op {
-	case parser.ADD:
+	case ADD:
 		code.Append(ir.NewAdd(laccess, raccess)) //Adds and puts result location
 		code.Append(ir.NewMov(code.Ax, laccess))
 		break
