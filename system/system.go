@@ -17,4 +17,6 @@ type System interface {
 	Release(addr int) err.Error
 	Shrink(result StackEntry) err.Error
 	Goto(offset int) err.Error
+	Expand() err.Error
+	Exit() err.Error
 }

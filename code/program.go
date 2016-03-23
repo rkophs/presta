@@ -71,7 +71,7 @@ func (p *Program) GenerateICG(code *icg.Code, s *parser.Semantic) err.Error {
 	}
 
 	//Return result & shrink stack
-	code.Append(ir.NewResult(code.Ax))
+	code.Append(ir.NewExit(code.Ax))
 
 	//Concatenate instruction lists and set correct function offsets
 	offset := code.GetCount()

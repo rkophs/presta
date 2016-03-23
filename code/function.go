@@ -111,7 +111,7 @@ func (f *Function) GenerateICG(code *icg.Code, s *parser.Semantic) err.Error {
 	//Instantiate stack accessors for each param
 	s.PushNewScope(f.params)
 	for i, p := range f.params {
-		code.SetVariable(s.GetVariableId(p), ir.NewStackAccess(-1*(i+1)))
+		code.SetVariable(s.GetVariableId(p), ir.NewStackAccess(-1*len(f.params)+i))
 	}
 
 	//Code generate the body

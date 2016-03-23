@@ -6,19 +6,20 @@ import (
 	"github.com/rkophs/presta/code"
 	"github.com/rkophs/presta/err"
 	"github.com/rkophs/presta/icg"
+	"github.com/rkophs/presta/ir"
 	"github.com/rkophs/presta/parser"
 	"io"
 )
 
-func Compile(r io.Reader) err.Error {
-	tokens, err := Tokenize(r)
-	if err != nil {
-		return err
+func Compile(r io.Reader) (i []ir.Instruction, e err.Error) {
+	tokens, e := Tokenize(r)
+	if e != nil {
+		return nil, e
 	}
 
 	tree, e := Parse(tokens)
 	if e != nil {
-		return e
+		return nil, e
 	}
 
 	var buffer1 bytes.Buffer
@@ -27,14 +28,14 @@ func Compile(r io.Reader) err.Error {
 
 	code, e := Generate(tree)
 	if e != nil {
-		return e
+		return nil, e
 	}
 
 	var buffer bytes.Buffer
 	code.Serialize(&buffer)
 	fmt.Println(buffer.String())
 
-	return nil
+	return code.GetInstructions(), nil
 }
 
 func Generate(tree code.AstNode) (*icg.Code, err.Error) {

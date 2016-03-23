@@ -33,7 +33,7 @@ func (n *Number) ToNumber() (float64, err.Error) {
 }
 
 func (n *Number) ToString() (string, err.Error) {
-	return strconv.FormatFloat(n.number, 'E', -1, 64), nil
+	return strconv.FormatFloat(n.number, 'f', -1, 64), nil
 }
 
 func (n *Number) ToHex() (string, err.Error) {

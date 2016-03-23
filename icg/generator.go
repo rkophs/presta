@@ -2,7 +2,6 @@ package icg
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/rkophs/presta/ir"
 )
 
@@ -32,10 +31,6 @@ func NewCode() *Code {
 }
 
 func (c *Code) Append(elem ir.Instruction) {
-	fmt.Println("Calling append")
-	if elem == nil {
-		fmt.Println("Nil input")
-	}
 	c.instructions = append(c.instructions, elem)
 	c.count++
 }
@@ -57,8 +52,6 @@ func (c *Code) ResetFrameOffset(amount int) {
 }
 
 func (c *Code) AppendBlock(block *Code) {
-	fmt.Println("Appending block")
-	fmt.Println(block.GetCount())
 	c.instructions = append(c.instructions, block.instructions...)
 	c.count += block.count
 }
@@ -79,11 +72,12 @@ func (c *Code) GetVariableLocation(id int) ir.Accessor {
 	return c.vars[id]
 }
 
+func (c *Code) GetInstructions() []ir.Instruction {
+	return c.instructions
+}
+
 func (c *Code) Serialize(buffer *bytes.Buffer) {
 	for _, instr := range c.instructions {
-		if instr == nil {
-			fmt.Println("nil instr")
-		}
 		instr.Serialize(buffer)
 	}
 }

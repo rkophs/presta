@@ -198,7 +198,10 @@ func NewCall(location *InstructionLocation) *Call {
 }
 
 func (c *Call) Execute(s system.System) err.Error {
-	return s.Goto(c.location.GetLocation())
+	if e := s.Goto(c.location.GetLocation()); e != nil {
+		return e
+	}
+	return s.Expand()
 }
 
 func (c *Call) Serialize(buffer *bytes.Buffer) {
@@ -225,6 +228,31 @@ func (r *Result) Execute(s system.System) err.Error {
 
 func (r *Result) Serialize(buffer *bytes.Buffer) {
 	buffer.WriteString("ret\t")
+	r.from.Serialize(buffer)
+	buffer.WriteRune('\n')
+}
+
+type Exit struct {
+	from Accessor
+}
+
+func NewExit(from Accessor) *Exit {
+	return &Exit{from: from}
+}
+
+func (r *Exit) Execute(s system.System) err.Error {
+	if from, e := r.from.ToValue(s); e != nil {
+		return e
+	} else {
+		if e := s.Shrink(from); e != nil {
+			return e
+		}
+		return s.Exit()
+	}
+}
+
+func (r *Exit) Serialize(buffer *bytes.Buffer) {
+	buffer.WriteString("exit\t")
 	r.from.Serialize(buffer)
 	buffer.WriteRune('\n')
 }
