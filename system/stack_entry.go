@@ -56,7 +56,7 @@ func NewString(str string) *String {
 }
 
 func (s *String) ToNumber() (float64, err.Error) {
-	return -1, err.NewRuntimeError("")
+	return -1, err.NewRuntimeError("string type not convertable to number.")
 }
 
 func (s *String) ToString() (string, err.Error) {

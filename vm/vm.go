@@ -8,56 +8,39 @@ import (
 )
 
 type VM struct {
-	instr     []ir.Instruction
-	stack     []system.StackEntry
-	heap      map[int]system.StackEntry
-	pc        int
-	funcs     []int
-	frames    []int
-	bp        int
-	sp        int
+	stack     *Stack
+	heap      *Heap
+	flow      *Flow
 	registers []system.StackEntry
 	exited    bool
+	err       err.Error
+	interrupt bool
 }
 
 func NewVM(instructions []ir.Instruction) *VM {
 	return &VM{
-		instr:     instructions,
-		stack:     []system.StackEntry{},
-		heap:      make(map[int]system.StackEntry),
-		pc:        0,
-		funcs:     []int{},
-		frames:    []int{},
-		bp:        0,
-		sp:        0,
+		flow:      NewFlow(instructions),
+		stack:     NewStack(),
+		heap:      NewHeap(),
+		interrupt: false,
+		err:       nil,
 		registers: make([]system.StackEntry, 1),
 		exited:    false,
 	}
 }
 
 func (v *VM) Run() err.Error {
-	for !v.exited {
+	for !v.exited && !v.interrupt {
 		v.Print()
-		if e := v.instr[v.pc].Execute(v); e != nil {
-			return e
-		}
-		v.pc++
+		v.flow.Execute(v)
 	}
+	fmt.Println("Complete:")
 	v.Print()
-	return nil
+	return v.err
 }
 
-func (v *VM) Push(a system.StackEntry) err.Error {
-	v.stack = append(v.stack, a)
-	v.sp++
-	return nil
-}
-
-func (v *VM) Pop() (system.StackEntry, err.Error) {
-	v.sp--
-	ret := v.stack[v.sp]
-	v.stack = v.stack[:v.sp]
-	return ret, nil
+func (v *VM) Push(a system.StackEntry) {
+	v.stack.Push(a)
 }
 
 func (v *VM) Print() {
@@ -72,14 +55,14 @@ func (v *VM) Print() {
 	} else {
 		s = ""
 	}
-	fmt.Println("PC: ", v.pc, " BP: ", v.bp, " SP: ", v.sp, " AX: ", s)
+	fmt.Println("PC: ", v.flow.pc, " BP: ", v.stack.bp, " SP: ", v.stack.sp, " AX: ", s)
 	fmt.Println("Stack:")
-	for i, v := range v.stack {
+	for i, v := range v.stack.stack {
 		s, _ := v.ToString()
 		fmt.Println(i, " ", s)
 	}
 	fmt.Println("Heap:")
-	for k, v := range v.heap {
+	for k, v := range v.heap.heap {
 		s, _ := v.ToString()
 		fmt.Println(k, " ", s)
 	}
@@ -87,70 +70,57 @@ func (v *VM) Print() {
 
 }
 
-func (v *VM) FetchS(offset int) (system.StackEntry, err.Error) {
-	return v.stack[v.bp+offset], nil
+func (v *VM) FetchS(offset int) system.StackEntry {
+	return v.stack.Fetch(offset)
 }
 
-func (v *VM) FetchM(memAddr int) (system.StackEntry, err.Error) {
-	return v.heap[memAddr], nil
+func (v *VM) FetchM(memAddr int) system.StackEntry {
+	return v.heap.Fetch(memAddr)
 }
 
-func (v *VM) FetchR(id int) (system.StackEntry, err.Error) {
-	return v.registers[id], nil
+func (v *VM) FetchR(id int) system.StackEntry {
+	return v.registers[id]
 }
 
-func (v *VM) SetS(offset int, entry system.StackEntry) err.Error {
-	v.stack[v.bp+offset] = entry
-	return nil
+func (v *VM) SetS(offset int, entry system.StackEntry) {
+	v.stack.Set(offset, entry)
 }
 
-func (v *VM) SetM(memAddr int, entry system.StackEntry) err.Error {
-	v.heap[memAddr] = entry
-	return nil
+func (v *VM) SetM(memAddr int, entry system.StackEntry) {
+	v.heap.Set(memAddr, entry)
 }
 
-func (v *VM) SetR(id int, entry system.StackEntry) err.Error {
+func (v *VM) SetR(id int, entry system.StackEntry) {
 	v.registers[id] = entry
-	return nil
 }
 
-func (v *VM) New(memAddr int) err.Error {
-	v.heap[memAddr] = nil
-	return nil
+func (v *VM) Release(addr int) {
+	v.heap.Release(addr)
 }
 
-func (v *VM) Release(addr int) err.Error {
-	delete(v.heap, addr)
-	return nil
-}
-
-func (v *VM) Shrink(result system.StackEntry) err.Error {
-	v.stack = v.stack[:v.bp]
-	v.sp = v.bp
-	v.bp = v.frames[len(v.frames)-1]
+func (v *VM) Return(result system.StackEntry) {
+	v.stack.PopFrame()
+	v.flow.Return()
 	v.registers[0] = result
-
-	if pc_len := (len(v.funcs) - 1); pc_len >= 0 {
-		v.pc = v.funcs[pc_len]
-		v.funcs = v.funcs[:pc_len]
-	}
-	return nil
 }
 
-func (v *VM) Exit() err.Error {
+func (v *VM) Exit(result system.StackEntry) {
 	v.exited = true
-	return nil
+	v.stack.PopFrame()
+	v.flow.Return()
+	v.registers[0] = result
 }
 
-func (v *VM) Expand() err.Error {
-	v.frames = append(v.frames, v.bp)
-	v.bp = v.sp
-	return nil
+func (v *VM) SetError(e string) {
+	v.interrupt = true
+	v.err = err.NewRuntimeError(e)
 }
 
-func (v *VM) Goto(offset int) err.Error {
-	v.funcs = append(v.funcs, v.pc)
-	fmt.Println("Going to: ", offset-1)
-	v.pc = offset - 1
-	return nil
+func (v *VM) Call(offset int) {
+	v.flow.Call(offset)
+	v.stack.PushFrame()
+}
+
+func (v *VM) Goto(offset int) {
+	v.flow.GoTo(offset)
 }

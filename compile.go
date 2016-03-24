@@ -39,7 +39,7 @@ func Compile(r io.Reader) (i []ir.Instruction, e err.Error) {
 }
 
 func Generate(tree code.AstNode) (*icg.Code, err.Error) {
-	code := icg.NewCode()
+	code := icg.NewCode(icg.NewLinker())
 	s := parser.NewSemantic()
 	if err := tree.GenerateICG(code, s); err != nil {
 		return nil, err

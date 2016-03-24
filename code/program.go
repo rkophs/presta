@@ -2,6 +2,7 @@ package code
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/rkophs/presta/err"
 	"github.com/rkophs/presta/icg"
 	"github.com/rkophs/presta/ir"
@@ -77,13 +78,15 @@ func (p *Program) GenerateICG(code *icg.Code, s *parser.Semantic) err.Error {
 	offset := code.GetCount()
 	for _, f := range p.funcs {
 		code.GetFunctionOffset(f.name).SetLocation(offset)
-		fnBlock := icg.NewCode()
+		fnBlock := icg.NewCode(code.GetLinker())
 		if e := f.GenerateICG(fnBlock, s); e != nil {
 			return e
 		}
 		code.AppendBlock(fnBlock)
 		offset += fnBlock.GetCount()
 	}
+
+	fmt.Println("program generated")
 
 	return nil
 }

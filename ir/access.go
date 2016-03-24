@@ -2,14 +2,13 @@ package ir
 
 import (
 	"bytes"
-	"github.com/rkophs/presta/err"
 	"github.com/rkophs/presta/system"
 	"strconv"
 )
 
 type Accessor interface {
-	Assign(s system.System, entry system.StackEntry) err.Error
-	ToValue(s system.System) (system.StackEntry, err.Error)
+	Assign(s system.System, entry system.StackEntry)
+	ToValue(s system.System) system.StackEntry
 	Serialize(buffer *bytes.Buffer)
 	//ToArray()
 }
@@ -23,12 +22,12 @@ func NewStackAccess(offset int) *StackAccess {
 	return &StackAccess{offset: offset}
 }
 
-func (o *StackAccess) ToValue(s system.System) (system.StackEntry, err.Error) {
+func (o *StackAccess) ToValue(s system.System) system.StackEntry {
 	return s.FetchS(o.offset)
 }
 
-func (o *StackAccess) Assign(s system.System, entry system.StackEntry) err.Error {
-	return s.SetS(o.offset, entry)
+func (o *StackAccess) Assign(s system.System, entry system.StackEntry) {
+	s.SetS(o.offset, entry)
 }
 
 func (s *StackAccess) Serialize(buffer *bytes.Buffer) {
@@ -49,20 +48,16 @@ type MemoryAccess struct {
 	addr int
 }
 
-func (m *MemoryAccess) ToValue(s system.System) (system.StackEntry, err.Error) {
+func (m *MemoryAccess) ToValue(s system.System) system.StackEntry {
 	return s.FetchM(m.addr)
 }
 
-func (m *MemoryAccess) Assign(s system.System, entry system.StackEntry) err.Error {
-	return s.SetM(m.addr, entry)
+func (m *MemoryAccess) Assign(s system.System, entry system.StackEntry) {
+	s.SetM(m.addr, entry)
 }
 
-func (m *MemoryAccess) Release(s system.System) err.Error {
-	return s.Release(m.addr)
-}
-
-func (m *MemoryAccess) New(s system.System) err.Error {
-	return s.New(m.addr)
+func (m *MemoryAccess) Release(s system.System) {
+	s.Release(m.addr)
 }
 
 func (m *MemoryAccess) Serialize(buffer *bytes.Buffer) {
@@ -80,12 +75,12 @@ func NewRegisterAccess(id int) *RegisterAccess {
 	return &RegisterAccess{id: id}
 }
 
-func (r *RegisterAccess) ToValue(s system.System) (system.StackEntry, err.Error) {
+func (r *RegisterAccess) ToValue(s system.System) system.StackEntry {
 	return s.FetchR(r.id)
 }
 
-func (r *RegisterAccess) Assign(s system.System, entry system.StackEntry) err.Error {
-	return s.SetR(r.id, entry)
+func (r *RegisterAccess) Assign(s system.System, entry system.StackEntry) {
+	s.SetR(r.id, entry)
 }
 
 func (r *RegisterAccess) Serialize(buffer *bytes.Buffer) {
@@ -102,12 +97,12 @@ func NewConstantAccess(entry system.StackEntry) *ConstantAccess {
 	return &ConstantAccess{entry: entry}
 }
 
-func (c *ConstantAccess) ToValue(s system.System) (system.StackEntry, err.Error) {
-	return c.entry, nil
+func (c *ConstantAccess) ToValue(s system.System) system.StackEntry {
+	return c.entry
 }
 
-func (c *ConstantAccess) Assign(s system.System, entry system.StackEntry) err.Error {
-	return err.NewRuntimeError("Cannot reassign a constant.")
+func (c *ConstantAccess) Assign(s system.System, entry system.StackEntry) {
+	s.SetError("Cannot reasign a constant accessor.")
 }
 
 func (c *ConstantAccess) Serialize(buffer *bytes.Buffer) {

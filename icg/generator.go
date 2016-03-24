@@ -2,6 +2,7 @@ package icg
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/rkophs/presta/ir"
 )
 
@@ -12,17 +13,17 @@ type Error struct {
 
 type Code struct {
 	instructions []ir.Instruction
-	linker       map[string]*ir.InstructionLocation //FunctionId -> instruction offset
-	vars         map[int]ir.Accessor                //varId -> access location
+	linker       *Linker             //FunctionId -> instruction offset
+	vars         map[int]ir.Accessor //varId -> access location
 	Ax           *ir.RegisterAccess
 	count        int
 	frameOffset  int
 }
 
-func NewCode() *Code {
+func NewCode(linker *Linker) *Code {
 	return &Code{
 		instructions: make([]ir.Instruction, 0),
-		linker:       make(map[string]*ir.InstructionLocation),
+		linker:       linker,
 		vars:         make(map[int]ir.Accessor),
 		count:        0,
 		frameOffset:  0,
@@ -57,11 +58,15 @@ func (c *Code) AppendBlock(block *Code) {
 }
 
 func (c *Code) SetFunctionOffset(id string, offset *ir.InstructionLocation) {
-	c.linker[id] = offset
+	c.linker.SetFunctionOffset(id, offset)
 }
 
 func (c *Code) GetFunctionOffset(id string) *ir.InstructionLocation {
-	return c.linker[id]
+	return c.linker.GetFunctionOffset(id)
+}
+
+func (c *Code) GetLinker() *Linker {
+	return c.linker
 }
 
 func (c *Code) SetVariable(id int, location ir.Accessor) {
@@ -77,7 +82,8 @@ func (c *Code) GetInstructions() []ir.Instruction {
 }
 
 func (c *Code) Serialize(buffer *bytes.Buffer) {
-	for _, instr := range c.instructions {
+	for i, instr := range c.instructions {
+		fmt.Println(i)
 		instr.Serialize(buffer)
 	}
 }

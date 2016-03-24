@@ -52,7 +52,7 @@ func writeInstr(buffer *bytes.Buffer, instr string, params ...string) {
 
 type Instruction interface {
 	Serialize(buffer *bytes.Buffer)
-	Execute(system.System) err.Error
+	Execute(system.System)
 }
 
 type InstructionType byte
@@ -77,15 +77,20 @@ func NewAdd(l, r Accessor) *Add {
 	return &Add{l: l, r: r}
 }
 
-func (a *Add) Execute(s system.System) err.Error {
-	l, el := a.l.ToValue(s)
-	lv, elv := l.ToNumber()
-	r, er := a.r.ToValue(s)
-	rv, erv := r.ToNumber()
-	if err := mergeErrors(el, elv, er, erv); err != nil {
-		return err
+func (a *Add) Execute(s system.System) {
+	l := a.l.ToValue(s)
+	r := a.r.ToValue(s)
+
+	lv, e := l.ToNumber()
+	if e != nil {
+		s.SetError("Addition requires 2 numbers")
+		return
 	}
-	return a.l.Assign(s, system.NewNumber(lv+rv))
+	rv, e := r.ToNumber()
+	if e != nil {
+		s.SetError("Addition requires 2 numbers")
+	}
+	a.l.Assign(s, system.NewNumber(lv+rv))
 }
 
 func (a *Add) Serialize(buffer *bytes.Buffer) {
@@ -104,12 +109,8 @@ func NewPush(v Accessor) *Push {
 	return &Push{v: v}
 }
 
-func (p *Push) Execute(s system.System) err.Error {
-	if v, e := p.v.ToValue(s); e != nil {
-		return e
-	} else {
-		return s.Push(v)
-	}
+func (p *Push) Execute(s system.System) {
+	s.Push(p.v.ToValue(s))
 }
 
 func (p *Push) Serialize(buffer *bytes.Buffer) {
@@ -122,45 +123,13 @@ type Release struct {
 	v *MemoryAccess
 }
 
-func (r *Release) Execute(s system.System) err.Error {
-	return r.v.Release(s)
+func (r *Release) Execute(s system.System) {
+	r.v.Release(s)
 }
 
 func (r *Release) Serialize(buffer *bytes.Buffer) {
 	buffer.WriteString("push\t")
 	r.v.Serialize(buffer)
-	buffer.WriteRune('\n')
-}
-
-type New struct {
-	v *MemoryAccess
-}
-
-func (n *New) Execute(s system.System) err.Error {
-	return n.v.New(s)
-}
-
-func (n *New) Serialize(buffer *bytes.Buffer) {
-	buffer.WriteString("new\t")
-	n.v.Serialize(buffer)
-	buffer.WriteRune('\n')
-}
-
-type Pop struct {
-	v Accessor
-}
-
-func (p *Pop) Execute(s system.System) err.Error {
-	if entry, e := s.Pop(); e != nil {
-		return e
-	} else {
-		return p.v.Assign(s, entry)
-	}
-}
-
-func (p *Pop) Serialize(buffer *bytes.Buffer) {
-	buffer.WriteString("pop\t")
-	p.v.Serialize(buffer)
 	buffer.WriteRune('\n')
 }
 
@@ -173,12 +142,8 @@ func NewMov(l Accessor, r Accessor) *Mov {
 	return &Mov{l: l, r: r}
 }
 
-func (m *Mov) Execute(s system.System) err.Error {
-	if v, e := m.r.ToValue(s); e != nil {
-		return e
-	} else {
-		return m.l.Assign(s, v)
-	}
+func (m *Mov) Execute(s system.System) {
+	m.l.Assign(s, m.r.ToValue(s))
 }
 
 func (m *Mov) Serialize(buffer *bytes.Buffer) {
@@ -197,11 +162,8 @@ func NewCall(location *InstructionLocation) *Call {
 	return &Call{location: location}
 }
 
-func (c *Call) Execute(s system.System) err.Error {
-	if e := s.Goto(c.location.GetLocation()); e != nil {
-		return e
-	}
-	return s.Expand()
+func (c *Call) Execute(s system.System) {
+	s.Call(c.location.GetLocation())
 }
 
 func (c *Call) Serialize(buffer *bytes.Buffer) {
@@ -218,12 +180,8 @@ func NewResult(from Accessor) *Result {
 	return &Result{from: from}
 }
 
-func (r *Result) Execute(s system.System) err.Error {
-	if from, e := r.from.ToValue(s); e != nil {
-		return e
-	} else {
-		return s.Shrink(from)
-	}
+func (r *Result) Execute(s system.System) {
+	s.Return(r.from.ToValue(s))
 }
 
 func (r *Result) Serialize(buffer *bytes.Buffer) {
@@ -240,15 +198,8 @@ func NewExit(from Accessor) *Exit {
 	return &Exit{from: from}
 }
 
-func (r *Exit) Execute(s system.System) err.Error {
-	if from, e := r.from.ToValue(s); e != nil {
-		return e
-	} else {
-		if e := s.Shrink(from); e != nil {
-			return e
-		}
-		return s.Exit()
-	}
+func (r *Exit) Execute(s system.System) {
+	s.Exit(r.from.ToValue(s))
 }
 
 func (r *Exit) Serialize(buffer *bytes.Buffer) {
